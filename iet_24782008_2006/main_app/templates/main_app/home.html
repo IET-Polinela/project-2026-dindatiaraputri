@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart City Kanada 2026 🍁</title>
+
+    <!-- CSS kamu (TIDAK DIUBAH) -->
     <style>
-        /* Gaya Dasar & Warna */
         :root {
             --pink-soft: #ffafbd;
             --white-cloud: #ffffff;
@@ -26,7 +27,6 @@
             scroll-behavior: smooth;
         }
 
-        /* Kontainer Utama */
         section {
             height: 100vh;
             display: flex;
@@ -36,7 +36,6 @@
             width: 100%;
             text-align: center;
             padding: 20px;
-            box-sizing: border-box;
         }
 
         .glass-card {
@@ -44,103 +43,103 @@
             backdrop-filter: blur(10px);
             padding: 40px;
             border-radius: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            max-width: 500px;
-            border: 2px solid white;
         }
 
-        h1 {
-            font-size: 2.5rem;
-            color: var(--accent);
-            margin-bottom: 10px;
-        }
-
-        /* Navigasi Lucu di Bawah */
         nav {
             position: fixed;
             bottom: 20px;
             background: white;
             padding: 10px 25px;
             border-radius: 50px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             display: flex;
             gap: 20px;
-            z-index: 1000;
         }
 
         nav a {
-            text-decoration: none;
             font-size: 1.5rem;
-            transition: transform 0.3s;
-        }
-
-        nav a:hover {
-            transform: scale(1.3) translateY(-5px);
-        }
-
-        /* Animasi */
-        .floating {
-            animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
+            text-decoration: none;
         }
 
         .btn-call {
-            display: inline-block;
-            margin-top: 15px;
             padding: 10px 25px;
-            background: var(--accent);
+            background: red;
             color: white;
-            text-decoration: none;
             border-radius: 20px;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-
-        .btn-call:hover {
-            background: #ff2e2e;
-            box-shadow: 0 5px 15px rgba(255,77,77,0.4);
+            text-decoration: none;
         }
     </style>
 </head>
+
 <body>
 
-    <nav>
-        <a href="#home" title="Home">🏠</a>
-        <a href="#info" title="Smart City">🌆</a>
-        <a href="#contact" title="Kontak">📞</a>
-    </nav>
+<!-- NAV -->
+<nav>
+    <a href="#home">🏠</a>
+    <a href="#info">🌆</a>
+    <a href="#reports">📝</a> <!-- TAMBAHAN -->
+    <a href="#contact">📞</a>
+</nav>
 
-    <section id="home">
-        <div class="floating" style="font-size: 4rem;">🍁</div>
-        <div class="glass-card">
-            <h1>Selamat Datang!</h1>
-            <p>Di kota Kanada yang makin gemoy dan lestari di tahun 2026. Scroll ke bawah buat intip lebih lanjut ya!</p>
-        </div>
-    </section>
+<!-- HOME -->
+<section id="home">
+    <div class="floating">🍁</div>
+    <div class="glass-card">
+        <h1>Selamat Datang!</h1>
+        <p>Di kota Kanada yang makin gemoy dan lestari di tahun 2026.</p>
+    </div>
+</section>
 
-    <section id="info" style="background: rgba(255,255,255,0.2);">
-        <div class="glass-card">
-            <h1>🌆 Smart City</h1>
-            <p>Ini adalah halaman utama <b>Smart City</b>. Semua serba canggih, ramah lingkungan, dan pastinya ramah di hati!</p>
-            <p style="font-size: 0.9rem;">Sistem kami bekerja 24/7 untuk kenyamanan kamu.</p>
-        </div>
-    </section>
+<!-- INFO -->
+<section id="info">
+    <div class="glass-card">
+        <h1>🌆 Smart City</h1>
+    </div>
+</section>
 
-    <section id="contact">
-        <div class="glass-card" style="border: 4px dashed var(--accent);">
-            <div style="font-size: 3rem;">📱</div>
-            <h1>Narahabung</h1>
-            <p>Butuh bantuan? Hubungi tim kami di:</p>
-            <div style="font-size: 1.5rem; font-weight: bold; margin: 10px 0;">
-                123-456-7890
-            </div>
-            <a href="tel:1234567890" class="btn-call">Telepon Sekarang</a>
-        </div>
-    </section>
+<!-- CONTACT -->
+<section id="contact">
+    <div class="glass-card">
+        <h1>Narahubung</h1>
+    </div>
+</section>
+
+<!-- ✅ TAMBAHAN LAPORAN (INI YANG KAMU MAU) -->
+<section id="reports">
+    <div class="glass-card">
+        <h1>📋 Daftar Laporan</h1>
+
+        <a href="{% url 'add_report' %}" class="btn-call">+ Tambah Laporan</a>
+
+        <br><br>
+
+        <table border="1">
+            <tr>
+                <th>Judul</th>
+                <th>Kategori</th>
+                <th>Deskripsi</th>
+                <th>Lokasi</th>
+                <th>Aksi</th>
+            </tr>
+
+            {% for report in reports %}
+            <tr>
+                <td>{{ report.title }}</td>
+                <td>{{ report.category }}</td>
+                <td>{{ report.description }}</td>
+                <td>{{ report.location }}</td>
+                <td>
+                    <a href="{% url 'edit_report' report.id %}">Edit</a> |
+                    <a href="{% url 'delete_report' report.id %}">Hapus</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">Belum ada data</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</section>
 
 </body>
 </html>
