@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>{{ title }}</h2>
+
+<form method="post" onsubmit="handleSubmit(this)">
+    {% csrf_token %}
+
+    <div class="mb-3">
+        <label>Judul</label>
+        <input type="text" name="judul" class="form-control" value="{{ laporan.judul|default:'' }}" required>
+    </div>
+
+    <div class="mb-3">
+        <label>Lokasi</label>
+        <input type="text" name="lokasi" class="form-control" value="{{ laporan.lokasi|default:'' }}" required>
+    </div>
+
+    <!-- BUTTON -->
+    <button type="submit" id="submitBtn" class="btn btn-success">
+        Submit
+    </button>
+
+    <a href="/" class="btn btn-secondary">Kembali</a>
+
+</form>
+
+<script>
+function handleSubmit(form) {
+    const btn = document.getElementById("submitBtn");
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Loading...';
+    btn.disabled = true;
+}
+</script>
+
+{% endblock %}

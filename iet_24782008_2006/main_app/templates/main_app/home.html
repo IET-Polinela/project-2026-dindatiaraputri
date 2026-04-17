@@ -3,43 +3,43 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smart City bandar lmapung </title>
+<title>Smart City Bandar Lampung</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
 :root {
     --pink-soft: #ffafbd;
     --white-cloud: #ffffff;
     --text-dark: #4a4a4a;
-    --accent: #ff4d4d;
 }
+
 body {
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Segoe UI', sans-serif;
     background: linear-gradient(180deg, #ffafbd 0%, #ffc3a0 100%);
     margin: 0;
     padding: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
     color: var(--text-dark);
-    scroll-behavior: smooth;
 }
+
+/* ✅ FIX UTAMA */
 section {
-    height: 100vh;
+    min-height: 100vh;
+    padding: 80px 20px;
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: 100%;
-    text-align: center;
-    padding: 20px;
 }
+
 .glass-card {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(10px);
-    padding: 40px;
-    border-radius: 30px;
+    background: rgba(255,255,255,0.9);
+    padding: 30px;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 1000px;
 }
+
+/* NAV */
 nav {
     position: fixed;
     bottom: 20px;
@@ -48,23 +48,29 @@ nav {
     border-radius: 50px;
     display: flex;
     gap: 20px;
+    z-index: 1000;
 }
+
 nav a {
     font-size: 1.5rem;
     text-decoration: none;
 }
-.btn-call {
-    padding: 10px 25px;
-    background: red;
-    color: white;
-    border-radius: 20px;
-    text-decoration: none;
+
+/* TABLE FIX */
+table {
+    font-size: 14px;
 }
+
+td {
+    vertical-align: middle;
+}
+
 </style>
 </head>
 
 <body>
 
+<!-- NAV -->
 <nav>
 <a href="#home">🏠</a>
 <a href="#info">🌆</a>
@@ -72,40 +78,36 @@ nav a {
 <a href="#contact">📞</a>
 </nav>
 
+<!-- HOME -->
 <section id="home">
-<div class="floating">🌸💐💐💐🌸🌸💐💐💐🌸</div>
-<div class="glass-card">
+<div class="glass-card text-center">
 <h1>Selamat Datang!</h1>
-<p>Di webside bandar lampung city, kota nyaman, aman, nan indah.</p>
+<p>Website Smart City Bandar Lampung</p>
 </div>
 </section>
 
+<!-- INFO -->
 <section id="info">
-<div class="glass-card">
-<h1>🌆 Smart City bandar lampung</h1>
-<p>Kota Bandar Lampung adalah ibu kota Provinsi Lampung yang berfungsi sebagai pintu gerbang utama Sumatera, menghubungkan jalur darat dan logistik dari Jawa. Kota ini dikenal sebagai pusat pemerintahan, pendidikan, dan ekonomi dengan kepadatan penduduk tinggi. Kota ini memiliki potensi wisata alam (seperti pantai dan bukit), budaya, dan kuliner, serta terus berbenah dengan perbaikan infrastruktur. </p>
+<div class="glass-card text-center">
+<h1>🌆 Smart City Bandar Lampung</h1>
+<p>
+Bandar Lampung adalah ibu kota Provinsi Lampung yang menjadi pintu gerbang utama Sumatera.
+Memiliki potensi wisata, ekonomi, dan infrastruktur yang terus berkembang.
+</p>
 </div>
 </section>
 
-<section id="contact">
-<div class="glass-card">
-<h1>Narahubung</h1>
-<p>cp : 24782008</p>
-<p>email : balamcity@gmail.com</p>
-<p>ig : seputarbandarlampung</p>
-</div>
-</section>
-
+<!-- REPORTS -->
 <section id="reports">
 <div class="glass-card">
-<h1>📋 Daftar Laporan</h1>
 
-<!-- ✅ FIX URL -->
-<a href="{% url 'report_add' %}" class="btn-call">+ Tambah Laporan</a>
+<h2 class="mb-3">📋 Daftar Laporan</h2>
 
-<br><br>
+<a href="{% url 'report_add' %}" class="btn btn-primary mb-3">+ Tambah Laporan</a>
 
-<table border="1">
+<div class="table-responsive">
+<table class="table table-striped table-sm">
+<thead>
 <tr>
 <th>Judul</th>
 <th>Kategori</th>
@@ -114,48 +116,76 @@ nav a {
 <th>Status</th>
 <th>Aksi</th>
 </tr>
+</thead>
 
+<tbody>
 {% for report in reports %}
 <tr>
 <td>{{ report.title }}</td>
 <td>{{ report.category }}</td>
-<td>{{ report.description }}</td>
+
+<td style="max-width:150px; word-wrap: break-word;">
+    {{ report.description }}
+</td>
+
 <td>{{ report.location }}</td>
 
 <td>
 {% if report.status == 'REPORTED' %}
-    🟡 Reported
+<span class="badge bg-secondary">Reported</span>
 {% elif report.status == 'VERIFIED' %}
-    🔵 Verified
+<span class="badge bg-info">Verified</span>
 {% elif report.status == 'IN_PROGRESS' %}
-    🟠 In Progress
+<span class="badge bg-warning">In Progress</span>
 {% else %}
-    🟢 Resolved
+<span class="badge bg-success">Resolved</span>
 {% endif %}
 </td>
 
 <td>
-<!-- ✅ FIX URL -->
-<a href="{% url 'report_edit' report.id %}">Edit</a> |
-<a href="{% url 'report_delete' report.id %}">Hapus</a>
+
+<!-- EDIT -->
+<a href="{% url 'report_edit' report.id %}" 
+   class="btn btn-primary btn-sm"
+   onclick="return confirm('Yakin ingin mengedit?')">
+   Edit
+</a>
+
+<!-- DELETE -->
+<a href="{% url 'report_delete' report.id %}" 
+   class="btn btn-danger btn-sm"
+   onclick="return confirm('Yakin ingin menghapus?')">
+   Delete
+</a>
 
 <br><br>
 
+<!-- STATUS -->
 <form action="{% url 'update_status' report.id %}" method="post">
 {% csrf_token %}
 
 {% if report.status == 'REPORTED' %}
-    <button name="status" value="VERIFIED">Verify</button>
+<button class="btn btn-info btn-sm" name="status" value="VERIFIED"
+onclick="return confirm('Ubah ke VERIFIED?')">
+Verify
+</button>
 
 {% elif report.status == 'VERIFIED' %}
-    <button name="status" value="IN_PROGRESS">Process</button>
+<button class="btn btn-warning btn-sm" name="status" value="IN_PROGRESS"
+onclick="return confirm('Ubah ke IN PROGRESS?')">
+Process
+</button>
 
 {% elif report.status == 'IN_PROGRESS' %}
-    <button name="status" value="RESOLVED">Resolve</button>
+<button class="btn btn-success btn-sm" name="status" value="RESOLVED"
+onclick="return confirm('Ubah ke RESOLVED?')">
+Resolve
+</button>
 
 {% else %}
-    ✔ Selesai
+<span class="text-success">✔ Selesai</span>
 {% endif %}
+
 </form>
 
 </td>
@@ -163,11 +193,23 @@ nav a {
 
 {% empty %}
 <tr>
-<td colspan="6">Belum ada data</td>
+<td colspan="6" class="text-center">Belum ada laporan</td>
 </tr>
 {% endfor %}
-
+</tbody>
 </table>
+</div>
+
+</div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+<div class="glass-card text-center">
+<h1>📞 Narahubung</h1>
+<p>CP : 24782008</p>
+<p>Email : balamcity@gmail.com</p>
+<p>IG : seputarbandarlampung</p>
 </div>
 </section>
 

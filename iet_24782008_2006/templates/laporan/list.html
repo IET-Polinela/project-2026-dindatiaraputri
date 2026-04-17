@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Daftar Laporan</h2>
+
+<a href="{% url 'report_add' %}" class="btn btn-primary mb-3">Tambah Laporan</a>
+
+{% if laporan_list %}
+<div class="table-responsive">
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Judul</th>
+            <th>Lokasi</th>
+            <th>Status</th>
+            <th>Aksi</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for laporan in laporan_list %}
+        <tr>
+            <td>{{ laporan.judul }}</td>
+            <td>{{ laporan.lokasi }}</td>
+
+            <!-- BADGE STATUS -->
+            <td>
+                <span class="badge 
+                {% if laporan.status == 'REPORTED' %}bg-secondary
+                {% elif laporan.status == 'VERIFIED' %}bg-info
+                {% elif laporan.status == 'IN_PROGRESS' %}bg-warning
+                {% elif laporan.status == 'RESOLVED' %}bg-success
+                {% endif %}">
+                {{ laporan.status }}
+                </span>
+            </td>
+
+            <!-- AKSI -->
+            <td>
+
+                <!-- UPDATE STATUS -->
+                {% if laporan.status == 'REPORTED' %}
+                <a href="{% url 'update_status' laporan.id %}?status=VERIFIED" 
+                   class="btn btn-info btn-sm"
+                   onclick="return confirm('Yakin ubah status ke VERIFIED?')">
+                   Update Status
+                </a>
+
+                {% elif laporan.status == 'VERIFIED' %}
+                <a href="{% url 'update_status' laporan.id %}?status=IN_PROGRESS" 
+                   class="btn btn-warning btn-sm"
+                   onclick="return confirm('Yakin ubah status ke IN PROGRESS?')">
+                   Update Status
+                </a>
+
+                {% elif laporan.status == 'IN_PROGRESS' %}
+                <a href="{% url 'update_status' laporan.id %}?status=RESOLVED" 
+                   class="btn btn-success btn-sm"
+                   onclick="return confirm('Yakin ubah status ke RESOLVED?')">
+                   Update Status
+                </a>
+                {% endif %}
+
+                <!-- EDIT + KONFIRMASI -->
+                <a href="{% url 'report_edit' laporan.id %}" 
+                   class="btn btn-primary btn-sm"
+                   onclick="return confirm('Yakin ingin mengedit laporan ini?')">
+                   Edit
+                </a>
+
+                <!-- DELETE + KONFIRMASI -->
+                <a href="{% url 'report_delete' laporan.id %}" 
+                   class="btn btn-danger btn-sm"
+                   onclick="return confirm('Yakin ingin menghapus laporan ini?')">
+                   Delete
+                </a>
+
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+
+{% else %}
+<p>Belum ada laporan</p>
+<a href="{% url 'report_add' %}" class="btn btn-primary">Tambah Laporan</a>
+{% endif %}
+
+{% endblock %}
