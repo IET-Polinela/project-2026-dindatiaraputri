@@ -1,188 +1,72 @@
-{% extends 'base.html' %}
+{% block extra_js %}
+<script>
 
-{% block title %}Dashboard{% endblock %}
+// 🔥 biar gak error kalau element belum kebaca
+document.addEventListener("DOMContentLoaded", function(){
 
-{% block extra_css %}
-<style>
-body {
-    background: linear-gradient(135deg, #ffafbd 0%, #ffc3a0 100%);
-    background-attachment: fixed;
+    // 🔍 LIVE SEARCH (FIX URL + AMAN)
+    const searchInput = document.getElementById('searchInput');
+
+    if(searchInput){
+        searchInput.addEventListener('keyup', function(){
+
+            fetch(`/api/search/?q=${this.value}`)
+            .then(res => res.json())
+            .then(data => {
+
+                console.log("DATA SEARCH:", data); // 🔥 buat screenshot nomor 6
+
+                let table = document.getElementById('reportTable');
+                table.innerHTML = '';
+
+                if(data.results.length === 0){
+                    table.innerHTML = `
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">
+                                😢 Data tidak ditemukan
+                            </td>
+                        </tr>
+                    `;
+                }
+
+                data.results.forEach(item => {
+                    table.innerHTML += `
+                        <tr onclick="showDetail(${item.id})">
+                            <td>${item.title}</td>
+                            <td>📍 ${item.location ?? '-'}</td>
+                            <td>💜 ${item.status}</td>
+                        </tr>
+                    `;
+                });
+
+            })
+            .catch(err => console.log("ERROR:", err));
+
+        });
+    }
+
+});
+
+// 📄 DETAIL MODAL (SUDAH BENAR)
+function showDetail(id){
+    fetch(`/api/report/${id}/`)
+    .then(res => res.json())
+    .then(data => {
+
+        console.log("DETAIL:", data); // 🔥 buat bukti screenshot
+
+        document.getElementById('modalTitle').innerText = data.title;
+        document.getElementById('modalCategory').innerText = data.category;
+        document.getElementById('modalStatus').innerText = data.status;
+        document.getElementById('modalDesc').innerText = data.description;
+
+        document.getElementById('modal').style.display = 'block';
+    });
 }
 
-/* SECTION */
-.section {
-    min-height: 100vh;
-    padding: 120px 20px 80px;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
+function closeModal(){
+    document.getElementById('modal').style.display = 'none';
 }
 
-/* CARD */
-.glass-card {
-    background: rgba(255,255,255,0.9);
-    backdrop-filter: blur(8px);
-    padding: 40px;
-    border-radius: 25px;
-    width: 100%;
-    max-width: 1100px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-}
-
-/* TITLE */
-h1, h2 {
-    color: #d81b60;
-    font-weight: bold;
-}
-
-/* TABLE */
-.table {
-    border-radius: 15px;
-    overflow: hidden;
-    background: white;
-}
-
-.badge {
-    padding: 8px 12px;
-    border-radius: 10px;
-    font-size: 12px;
-}
-
-/* BUTTON */
-.btn-primary {
-    background-color: #ff69b4 !important;
-    border: none !important;
-    border-radius: 10px;
-}
-
-.btn-primary:hover {
-    background-color: #e91e63 !important;
-}
-</style>
-{% endblock %}
-
-
-{% block content %}
-
-<!-- HOME -->
-<div id="home" class="section">
-    <div class="glass-card text-center">
-        <h1 class="display-5">Selamat Datang ✨</h1>
-        <p class="lead">Smart City Bandar Lampung</p>
-        <p class="text-muted">
-            Portal pengaduan masyarakat untuk kota yang lebih baik
-        </p>
-    </div>
-</div>
-
-<!-- INFO -->
-<div id="info" class="section">
-    <div class="glass-card text-center">
-        <h1>🌆 Info Kota</h1>
-        <p>
-            Bandar Lampung sebagai Smart City modern dengan layanan digital
-            untuk masyarakat.
-        </p>
-    </div>
-</div>
-
-<!-- REPORT -->
-<div id="reports" class="section">
-    <div class="glass-card">
-
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>📋 Daftar Laporan</h2>
-
-            <!-- ✅ SEKARANG SEMUA USER LIHAT -->
-            <a href="{% url 'report_add' %}" class="btn btn-primary">+ Tambah</a>
-        </div>
-
-        {% if reports %}
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-
-                <thead class="table-light">
-                    <tr>
-                        <th>Judul</th>
-                        <th>Lokasi</th>
-                        <th>Status</th>
-
-                        {% if user.is_authenticated and user.is_admin %}
-                        <th class="text-center">Aksi</th>
-                        {% endif %}
-                    </tr>
-                </thead>
-
-                <tbody>
-                {% for laporan in reports %}
-                    <tr>
-                        <td class="fw-bold">{{ laporan.title }}</td>
-                        <td>📍 {{ laporan.location }}</td>
-
-                        <td>
-                            {% if laporan.status == 'REPORTED' %}
-                                <span class="badge bg-secondary">Reported</span>
-                            {% elif laporan.status == 'VERIFIED' %}
-                                <span class="badge bg-info text-dark">Verified</span>
-                            {% elif laporan.status == 'IN_PROGRESS' %}
-                                <span class="badge bg-warning text-dark">In Progress</span>
-                            {% else %}
-                                <span class="badge bg-success">Resolved</span>
-                            {% endif %}
-                        </td>
-
-                        {% if user.is_authenticated and user.is_admin %}
-                        <td class="text-center">
-
-                            <a href="{% url 'report_edit' laporan.id %}" 
-                               class="btn btn-sm btn-primary">Edit</a>
-
-                            <a href="{% url 'report_delete' laporan.id %}" 
-                               class="btn btn-sm btn-danger">Hapus</a>
-
-                            <br><br>
-
-                            <form action="{% url 'update_status' laporan.id %}" method="post">
-                                {% csrf_token %}
-
-                                {% if laporan.status == 'REPORTED' %}
-                                    <button class="btn btn-info btn-sm" name="status" value="VERIFIED">Verify</button>
-
-                                {% elif laporan.status == 'VERIFIED' %}
-                                    <button class="btn btn-warning btn-sm" name="status" value="IN_PROGRESS">Process</button>
-
-                                {% elif laporan.status == 'IN_PROGRESS' %}
-                                    <button class="btn btn-success btn-sm" name="status" value="RESOLVED">Resolve</button>
-                                {% endif %}
-                            </form>
-
-                        </td>
-                        {% endif %}
-
-                    </tr>
-                {% endfor %}
-                </tbody>
-
-            </table>
-        </div>
-
-        {% else %}
-        <div class="text-center py-4">
-            <p class="text-muted">Belum ada laporan</p>
-        </div>
-        {% endif %}
-
-    </div>
-</div>
-
-<!-- CONTACT -->
-<div id="contact" class="section">
-    <div class="glass-card text-center">
-        <h1>📞 Kontak</h1>
-        <p>No: 24782008</p>
-        <p>Email: balamcity@gmail.com</p>
-        <p>IG: @seputarbandarlampung</p>
-    </div>
-</div>
-
+</script>
 {% endblock %}

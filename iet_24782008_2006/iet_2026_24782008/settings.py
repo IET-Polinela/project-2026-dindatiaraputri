@@ -8,11 +8,11 @@ SECRET_KEY = 'django-insecure-*_sk&o06jrba8y)o9v_gjg1$o1%@0f85*n1l3+o*m#k3$g)5_z
 DEBUG = True
 ALLOWED_HOSTS = []
 
-# --- APPLICATION DEFINITION ---
 INSTALLED_APPS = [
-    # 1. Aplikasi Kustom (Ditaruh di atas agar migrasi didahulukan)
+    # 1. Aplikasi Kustom
     'usermanagement_24782008',
     'main_app',
+    'dashboard_24782008',  # ✅ TAMBAHKAN INI
     'about',
     'contacts',
 

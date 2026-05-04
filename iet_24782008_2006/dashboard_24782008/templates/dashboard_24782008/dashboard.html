@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9ff;
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 20px;
+        }
+
+        .container {
+            width: 90%;
+            margin: auto;
+        }
+
+        .chart-box {
+            width: 360px;
+            height: 380px; /* 🔥 BIKIN SAMA BESAR */
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin: 20px;
+            display: inline-block;
+        }
+
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th {
+            background: #cdb4db;
+            color: white;
+            padding: 10px;
+        }
+
+        td {
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background: #f1f1f1;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>📊 Dashboard Laporan</h1>
+
+<div class="container">
+
+    <!-- CHART -->
+    <div class="chart-box">
+        <h3>Status</h3>
+        <canvas id="statusChart" width="300" height="300"></canvas> <!-- 🔥 FIX SIZE -->
+    </div>
+
+    <div class="chart-box">
+        <h3>Kategori</h3>
+        <canvas id="categoryChart" width="300" height="300"></canvas> <!-- 🔥 FIX SIZE -->
+    </div>
+
+</div>
+
+<!-- TABLE -->
+<h3>📄 5 Laporan Terbaru (REPORTED)</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Judul</th>
+            <th>Kategori</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody id="reportedTable"></tbody>
+</table>
+
+<h3>📄 5 Laporan Selesai (RESOLVED)</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Judul</th>
+            <th>Kategori</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody id="resolvedTable"></tbody>
+</table>
+
+<script>
+fetch('/api/dashboard/')
+.then(response => response.json())
+.then(data => {
+
+    // STATUS CHART
+    const statusLabels = data.status.map(item => item.status);
+    const statusValues = data.status.map(item => item.total);
+
+    new Chart(document.getElementById('statusChart'), {
+        type: 'pie',
+        data: {
+            labels: statusLabels,
+            datasets: [{
+                data: statusValues,
+                backgroundColor: [
+                    '#A3C4F3',
+                    '#FFAFCC',
+                    '#CDB4DB',
+                    '#FFD6A5'
+                ]
+            }]
+        },
+        options: {
+            responsive: false, // 🔥 WAJIB biar gak berubah ukuran
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // CATEGORY CHART
+    const categoryLabels = data.category.map(item => item.category);
+    const categoryValues = data.category.map(item => item.total);
+
+    new Chart(document.getElementById('categoryChart'), {
+        type: 'bar',
+        data: {
+            labels: categoryLabels,
+            datasets: [{
+                data: categoryValues,
+                backgroundColor: [
+                    '#BDE0FE',
+                    '#FFC8DD',
+                    '#DDBDF1',
+                    '#FFE5B4',
+                    '#CAFFBF'
+                ]
+            }]
+        },
+        options: {
+            responsive: false, // 🔥 WAJIB
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+
+    // TABLE REPORTED
+    const reportedTable = document.getElementById('reportedTable');
+    data.reported.forEach(item => {
+        reportedTable.innerHTML += `
+            <tr>
+                <td>${item.title}</td>
+                <td>${item.category}</td>
+                <td>${item.status}</td>
+            </tr>
+        `;
+    });
+
+    // TABLE RESOLVED
+    const resolvedTable = document.getElementById('resolvedTable');
+    data.resolved.forEach(item => {
+        resolvedTable.innerHTML += `
+            <tr>
+                <td>${item.title}</td>
+                <td>${item.category}</td>
+                <td>${item.status}</td>
+            </tr>
+        `;
+    });
+
+});
+</script>
+
+</body>
+</html>
