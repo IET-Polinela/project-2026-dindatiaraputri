@@ -3,16 +3,13 @@ from django.urls import path, include
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
-    # Admin
     path('admin/', admin.site.urls),
 
-    # App routes
-    path('', include('main_app.urls')),
-    path('', include('dashboard_24782008.urls')),  
+    path('', include('main_app.urls')),  # 🔥 cukup ini aja untuk root
+
     path('about/', include('about.urls')),
     path('contacts/', include('contacts.urls')),
 
-    # Authentication
     path('login/', auth_views.LoginView.as_view(
         template_name='usermanagement_24782008/login.html'
     ), name='login'),

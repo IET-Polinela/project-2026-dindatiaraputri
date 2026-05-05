@@ -1,20 +1,19 @@
 {% block extra_js %}
 <script>
 
-// 🔥 biar gak error kalau element belum kebaca
 document.addEventListener("DOMContentLoaded", function(){
 
-    // 🔍 LIVE SEARCH (FIX URL + AMAN)
+    const SEARCH_URL = "{% url 'search_reports' %}";
     const searchInput = document.getElementById('searchInput');
 
     if(searchInput){
         searchInput.addEventListener('keyup', function(){
 
-            fetch(`/api/search/?q=${this.value}`)
+            fetch(`${SEARCH_URL}?q=${this.value}`)
             .then(res => res.json())
             .then(data => {
 
-                console.log("DATA SEARCH:", data); // 🔥 buat screenshot nomor 6
+                console.log("DATA SEARCH:", data);
 
                 let table = document.getElementById('reportTable');
                 table.innerHTML = '';
@@ -27,6 +26,7 @@ document.addEventListener("DOMContentLoaded", function(){
                             </td>
                         </tr>
                     `;
+                    return;
                 }
 
                 data.results.forEach(item => {
@@ -47,13 +47,13 @@ document.addEventListener("DOMContentLoaded", function(){
 
 });
 
-// 📄 DETAIL MODAL (SUDAH BENAR)
+// 📄 DETAIL MODAL
 function showDetail(id){
     fetch(`/api/report/${id}/`)
     .then(res => res.json())
     .then(data => {
 
-        console.log("DETAIL:", data); // 🔥 buat bukti screenshot
+        console.log("DETAIL:", data);
 
         document.getElementById('modalTitle').innerText = data.title;
         document.getElementById('modalCategory').innerText = data.category;
