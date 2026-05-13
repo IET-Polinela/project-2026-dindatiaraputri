@@ -14,27 +14,25 @@ from .views import (
 )
 
 urlpatterns = [
-    # HOME PAGE & REPORT LIST
-    # Menggunakan home_page untuk kedua path agar fitur pencarian di home tidak error
+    # --- HOME & LANDING PAGE ---
+    # home_page digunakan di kedua path agar fitur pencarian tetap sinkron
     path('', home_page, name='home'),
     path('report/', home_page, name='report_list'),
 
-    # DASHBOARD
-    # Path ini harus sinkron dengan fetch('/api/dashboard/') di JavaScript dashboard kamu
+    # --- DASHBOARD AREA ---
+    # Halaman utama dashboard dan endpoint API untuk datanya
     path('dashboard/', dashboard_page, name='dashboard'),
     path('api/dashboard/', dashboard_data, name='dashboard_data'),
 
-    # LIVE SEARCH
-    # Gunakan path 'search/' (dengan slash) agar cocok dengan fetch('/search/')
+    # --- SEARCH & MODAL API ---
+    # Endpoint untuk live search dan detail modal tanpa reload
     path('search/', search_reports, name='search_reports'),
-
-    # DETAIL & MODAL API
-    # Detail halaman biasa
-    path('report/<int:pk>/', ReportDetailView.as_view(), name='report_detail'),
-    # API untuk Detail Modal (Pastikan dipanggil fetch('/api/report/ID/') di JS)
     path('api/report/<int:pk>/', report_detail_api, name='report_detail_api'),
 
-    # CRUD ACTIONS (Admin Only)
+    # --- REPORT DETAILS PAGE ---
+    path('report/<int:pk>/', ReportDetailView.as_view(), name='report_detail'),
+
+    # --- CRUD OPERATIONS (Admin/Petugas) ---
     path('add/', ReportCreateView.as_view(), name='report_add'),
     path('edit/<int:pk>/', ReportUpdateView.as_view(), name='report_edit'),
     path('delete/<int:pk>/', ReportDeleteView.as_view(), name='report_delete'),

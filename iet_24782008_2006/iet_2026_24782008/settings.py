@@ -15,6 +15,7 @@ INSTALLED_APPS = [
     'dashboard_24782008',  # ✅ TAMBAHKAN INI
     'about',
     'contacts',
+    'rest_framework',
 
     # 2. Aplikasi Bawaan Django
     'django.contrib.admin',

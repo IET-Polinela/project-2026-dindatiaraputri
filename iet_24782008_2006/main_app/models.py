@@ -1,6 +1,8 @@
 from django.db import models
+from usermanagement_24782008.models import CustomUser
 
 STATUS_CHOICES = [
+    ('DRAFT', 'Draft'),
     ('REPORTED', 'Reported'),
     ('VERIFIED', 'Verified'),
     ('IN_PROGRESS', 'In Progress'),
@@ -16,10 +18,16 @@ class Report(models.Model):
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default='REPORTED'
+        default='DRAFT'
+    )
+
+    reporter = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.title

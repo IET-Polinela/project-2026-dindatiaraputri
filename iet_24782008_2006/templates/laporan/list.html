@@ -1,71 +1,114 @@
 {% block extra_js %}
 <script>
 
-document.addEventListener("DOMContentLoaded", function(){
+document.addEventListener("DOMContentLoaded", function () {
 
+    // URL SEARCH
     const SEARCH_URL = "{% url 'search_reports' %}";
-    const searchInput = document.getElementById('searchInput');
 
-    if(searchInput){
-        searchInput.addEventListener('keyup', function(){
+    // INPUT SEARCH
+    const searchInput = document.getElementById("searchInput");
 
-            fetch(`${SEARCH_URL}?q=${this.value}`)
-            .then(res => res.json())
+    // TABLE BODY
+    const table = document.getElementById("reportTable");
+
+    // CEK ELEMENT ADA
+    if (!searchInput || !table) {
+        console.log("Search input / table tidak ditemukan");
+        return;
+    }
+
+    // EVENT SEARCH
+    searchInput.addEventListener("keyup", function () {
+
+        const query = this.value;
+
+        fetch(`${SEARCH_URL}?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
             .then(data => {
 
                 console.log("DATA SEARCH:", data);
 
-                let table = document.getElementById('reportTable');
-                table.innerHTML = '';
+                // KOSONGKAN TABLE
+                table.innerHTML = "";
 
-                if(data.results.length === 0){
+                // JIKA DATA KOSONG
+                if (!data.results || data.results.length === 0) {
+
                     table.innerHTML = `
                         <tr>
-                            <td colspan="3" class="text-center text-muted">
+                            <td colspan="3" style="text-align:center; padding:20px; color:gray;">
                                 😢 Data tidak ditemukan
                             </td>
                         </tr>
                     `;
+
                     return;
                 }
 
+                // LOOP DATA
                 data.results.forEach(item => {
+
                     table.innerHTML += `
-                        <tr onclick="showDetail(${item.id})">
-                            <td>${item.title}</td>
-                            <td>📍 ${item.location ?? '-'}</td>
-                            <td>💜 ${item.status}</td>
+                        <tr onclick="showDetail(${item.id})" style="cursor:pointer;">
+                            
+                            <td>
+                                ${item.title}
+                            </td>
+
+                            <td>
+                                📍 ${item.location ? item.location : '-'}
+                            </td>
+
+                            <td>
+                                ${item.status}
+                            </td>
+
                         </tr>
                     `;
                 });
 
             })
-            .catch(err => console.log("ERROR:", err));
+            .catch(error => {
+                console.log("ERROR SEARCH:", error);
+            });
 
-        });
-    }
+    });
 
 });
 
-// 📄 DETAIL MODAL
-function showDetail(id){
+
+// ==============================
+// DETAIL MODAL
+// ==============================
+
+function showDetail(id) {
+
     fetch(`/api/report/${id}/`)
-    .then(res => res.json())
-    .then(data => {
+        .then(response => response.json())
+        .then(data => {
 
-        console.log("DETAIL:", data);
+            console.log("DETAIL:", data);
 
-        document.getElementById('modalTitle').innerText = data.title;
-        document.getElementById('modalCategory').innerText = data.category;
-        document.getElementById('modalStatus').innerText = data.status;
-        document.getElementById('modalDesc').innerText = data.description;
+            document.getElementById("modalTitle").innerText = data.title || "-";
+            document.getElementById("modalCategory").innerText = data.category || "-";
+            document.getElementById("modalStatus").innerText = data.status || "-";
+            document.getElementById("modalDesc").innerText = data.description || "-";
 
-        document.getElementById('modal').style.display = 'block';
-    });
+            document.getElementById("modal").style.display = "block";
+        })
+        .catch(error => {
+            console.log("ERROR DETAIL:", error);
+        });
 }
 
-function closeModal(){
-    document.getElementById('modal').style.display = 'none';
+
+// ==============================
+// CLOSE MODAL
+// ==============================
+
+function closeModal() {
+    document.getElementById("modal").style.display = "none";
 }
 
 </script>
