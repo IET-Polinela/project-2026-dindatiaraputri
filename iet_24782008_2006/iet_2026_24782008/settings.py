@@ -24,6 +24,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # ... app bawaan django dan rest_framework lainnya ...
+    'rest_framework_simplejwt',  # <--- Tambahkan baris ini
+    # ... app buatanmu (misal: laporan, dll) ...
 ]
 
 MIDDLEWARE = [
@@ -93,3 +97,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'report_list'
 LOGOUT_REDIRECT_URL = 'login'
+
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        # 1. Taruh BrowsableAPIRenderer di paling atas agar tombolnya muncul kembali
+        'rest_framework.renderers.BrowsableAPIRenderer',
+        'rest_framework.renderers.JSONRenderer',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication'
+    )
+}

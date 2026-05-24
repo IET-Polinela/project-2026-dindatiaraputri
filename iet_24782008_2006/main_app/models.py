@@ -1,6 +1,7 @@
 from django.db import models
 from usermanagement_24782008.models import CustomUser
 
+# Pilihan status sesuai instruksi dosen kamu
 STATUS_CHOICES = [
     ('DRAFT', 'Draft'),
     ('REPORTED', 'Reported'),
@@ -21,6 +22,7 @@ class Report(models.Model):
         default='DRAFT'
     )
 
+    # Relasi ke CustomUser sebagai pembuat laporan (Citizen)
     reporter = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE
