@@ -1,105 +1,174 @@
 <!DOCTYPE html>
-<html lang="id">
-
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌻 Sunflower Citizen Portal</title>
+    <title>Citizen Portal</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 
     <style>
+        /* --- TEMA KUNING SOFT PASTEL --- */
         body {
-            background-color: #FFF9E6;
-            background-image:
-                radial-gradient(circle at 15% 20%, #FFF176 0%, transparent 20%),
-                radial-gradient(circle at 85% 80%, #FFE082 0%, transparent 20%);
-            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #FFF9E6 !important; /* Mengubah background utama jadi kuning soft */
+            font-family: 'Poppins', sans-serif !important;
+            position: relative;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        .spa-container {
-            min-height: calc(100vh - 80px);
+        /* Mengubah semua kartu/form (termasuk form login dinamis) menjadi aesthetic */
+        .card, #loginForm, [class*="login-card"], .container-fluid .row {
+            background-color: #ffffff !important;
+            border: 2px solid #FFEAA7 !important; /* Border kuning pastel miring */
+            border-radius: 24px !important; /* Membuat sudut membulat lucu */
+            box-shadow: 0 10px 25px rgba(230, 180, 80, 0.12) !important;
         }
 
-        .navbar {
-            background: linear-gradient(
-                90deg,
-                #FFD54F,
-                #FFE082
-            ) !important;
+        /* Mengubah gaya teks judul agar senada */
+        h1, h2, h3, .card-title {
+            color: #574B14 !important;
+            font-weight: 600 !important;
         }
 
-        .navbar-brand {
-            color: #6D4C41 !important;
-            font-weight: bold;
-            font-size: 1.4rem;
+        /* Gaya tombol Bootstrap default menjadi warna kuning madu */
+        .btn-primary, button[type="submit"] {
+            background-color: #FFD23F !important;
+            color: #574B14 !important;
+            border: none !important;
+            border-radius: 12px !important;
+            font-weight: 600 !important;
+            padding: 10px 20px !important;
+            box-shadow: 0 4px 12px rgba(255, 210, 63, 0.25) !important;
+            transition: all 0.3s ease !important;
         }
 
-        .card {
-            border: none;
-            border-radius: 25px;
-            background: #FFFDF5;
+        .btn-primary:hover, button[type="submit"]:hover {
+            background-color: #E6B822 !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 15px rgba(255, 210, 63, 0.35) !important;
         }
 
-        .btn-primary {
-            background-color: #FFD54F;
-            border: none;
-            color: #6D4C41;
-            font-weight: bold;
+        /* Input field membulat yang manis */
+        .form-control, input[type="text"], input[type="password"] {
+            border: 2px solid #FFEAA7 !important;
+            border-radius: 12px !important;
+            background-color: #FFFDF6 !important;
+            color: #574B14 !important;
         }
 
-        .btn-primary:hover {
-            background-color: #FFCA28;
-            color: #6D4C41;
+        .form-control:focus, input:focus {
+            border-color: #FFD23F !important;
+            background-color: #ffffff !important;
+            box-shadow: 0 0 8px rgba(255, 210, 63, 0.2) !important;
         }
 
-        .form-control {
-            border-radius: 15px;
-        }
-
-        .sunflower-decoration {
+        /* --- DEKORASI BUNGA MATAHARI CSS MURNI --- */
+        .sunflower-decor {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            font-size: 60px;
-            opacity: 0.6;
+            width: 120px;
+            height: 120px;
+            opacity: 0.65;
             pointer-events: none;
+            z-index: 9999; /* Agar selalu berada di paling depan background */
+        }
+        
+        /* Posisi bunga di pojok kanan atas */
+        .sf-top-right {
+            top: -25px;
+            right: -25px;
+            transform: rotate(15deg);
+        }
+
+        /* Posisi bunga di pojok kiri bawah */
+        .sf-bottom-left {
+            bottom: -25px;
+            left: -25px;
+            transform: rotate(-15deg);
+        }
+
+        /* Bagian tengah bunga matahari (Cokelat) */
+        .sunflower-center {
+            width: 50px;
+            height: 50px;
+            background-color: #6E473B;
+            border-radius: 50%;
+            position: absolute;
+            top: 35px;
+            left: 35px;
+            z-index: 2;
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.3);
+        }
+
+        /* Wadah kelopak dengan animasi berputar pelan */
+        .petal-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            animation: sf-spin 25s linear infinite; 
+        }
+
+        /* Kelopak bunga */
+        .petal {
+            position: absolute;
+            width: 20px;
+            height: 45px;
+            background-color: #FFD23F;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            top: 5px;
+            left: 50px;
+            transform-origin: bottom center;
+        }
+
+        /* Rotasi melingkar kelopak */
+        .petal:nth-child(1) { transform: rotate(0deg); }
+        .petal:nth-child(2) { transform: rotate(30deg); }
+        .petal:nth-child(3) { transform: rotate(60deg); }
+        .petal:nth-child(4) { transform: rotate(90deg); }
+        .petal:nth-child(5) { transform: rotate(120deg); }
+        .petal:nth-child(6) { transform: rotate(150deg); }
+        .petal:nth-child(7) { transform: rotate(180deg); }
+        .petal:nth-child(8) { transform: rotate(210deg); }
+        .petal:nth-child(9) { transform: rotate(240deg); }
+        .petal:nth-child(10) { transform: rotate(270deg); }
+        .petal:nth-child(11) { transform: rotate(300deg); }
+        .petal:nth-child(12) { transform: rotate(330deg); }
+
+        @keyframes sf-spin {
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
-
 <body>
 
-    <nav class="navbar navbar-expand-lg shadow-sm">
-
-        <div class="container-fluid px-4">
-
-            <a class="navbar-brand fw-bold" href="#">
-                <i class="bi bi-flower1 me-2"></i>
-                🌻 Sunflower Citizen Portal
-            </a>
-
-            <div id="nav-menus" class="ms-auto"></div>
-
+    <div class="sunflower-decor sf-top-right">
+        <div class="sunflower-center"></div>
+        <div class="petal-container">
+            <div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="petal"></div>
+            <div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="petal"></div>
+            <div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="petal"></div>
         </div>
-
-    </nav>
-
-    <main class="container-fluid px-4 mt-4 spa-container" id="app-content">
-    </main>
-
-    <div class="sunflower-decoration">
-        🌻
     </div>
 
-    <script src="js/api.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/app.js"></script>
-    <script src="js/router.js"></script>
+    <div class="sunflower-decor sf-bottom-left">
+        <div class="sunflower-center"></div>
+        <div class="petal-container">
+            <div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="petal"></div>
+            <div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="petal"></div>
+            <div class="petal"></div><div class="petal"></div><div class="petal"></div><div class="petal"></div>
+        </div>
+    </div>
+
+    <div id="app"></div>
+
+    <script type="module" src="js/app.js"></script>
 
 </body>
-
 </html>

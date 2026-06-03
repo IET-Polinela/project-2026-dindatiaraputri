@@ -1,123 +1,98 @@
-const routes = {
+import { setupLoginForm } from "./auth.js";
 
-    '#login': `
+export function router() {
 
-        <div class="row justify-content-center mt-5">
+    const app = document.getElementById("app");
 
-            <div class="col-md-4 card shadow-sm border-0 p-4">
+    const hash = window.location.hash || "#login";
 
-                <h4 class="text-center fw-bold mb-4">
-                    Login Warga
-                </h4>
+    if (hash === "#dashboard") {
 
-                <form id="loginForm">
+        app.innerHTML = `
+            <div class="container mt-4">
 
-                    <input
-                        type="text"
-                        id="loginUsername"
-                        class="form-control mb-3"
-                        placeholder="Username"
-                        required
-                    >
+                <h2>
+                    <i class="bi bi-speedometer2"></i>
+                    Dashboard Citizen
+                </h2>
 
-                    <input
-                        type="password"
-                        id="loginPassword"
-                        class="form-control mb-3"
-                        placeholder="Password"
-                        required
-                    >
+                <div class="row mt-3">
 
-                    <button
-                        type="submit"
-                        class="btn btn-primary w-100 fw-bold"
-                    >
-                        Masuk
-                    </button>
+                    <div class="col-12 col-lg-3">
+                        <div class="card p-3">
+                            Menu Kiri
+                        </div>
+                    </div>
 
-                </form>
+                    <div class="col-12 col-lg-6">
+                        <div class="card p-3">
+                            Konten Tengah
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-3">
+                        <div class="card p-3">
+                            Panel Kanan
+                        </div>
+                    </div>
+
+                </div>
 
             </div>
+        `;
 
-        </div>
-    `,
+    } else {
 
-    '#dashboard': `
+        app.innerHTML = `
+            <div class="container mt-5">
 
-        <div class="row g-4">
+                <div class="row justify-content-center">
 
-            <aside class="col-12 col-lg-3">
+                    <div class="col-md-4">
 
-                <div class="card border-0 p-3 shadow-sm sticky-top"
-                    style="top: 20px;">
+                        <div class="card">
 
-                    <button class="btn btn-primary btn-lg w-100 fw-bold mb-3">
+                            <div class="card-body">
 
-                        <i class="bi bi-plus-circle-fill me-2"></i>
+                                <h3 class="text-center mb-3">
+                                    <i class="bi bi-person-circle"></i>
+                                    Login
+                                </h3>
 
-                        Laporan Baru
+                                <form id="loginForm">
 
-                    </button>
+                                    <input
+                                        type="text"
+                                        id="username"
+                                        class="form-control mb-2"
+                                        placeholder="Username">
 
-                </div>
+                                    <input
+                                        type="password"
+                                        id="password"
+                                        class="form-control mb-3"
+                                        placeholder="Password">
 
-            </aside>
+                                    <button
+                                        type="submit"
+                                        class="btn btn-primary w-100">
+                                        Login
+                                    </button>
 
-            <section class="col-12 col-lg-6">
+                                </form>
 
-                <div class="card border-0 p-5 shadow-sm text-center text-muted">
+                            </div>
 
-                    <i class="bi bi-inbox fs-1"></i>
+                        </div>
 
-                    <h5 class="mt-3">
-                        Selamat Datang!
-                    </h5>
-
-                    <p class="small">
-                        Koneksi API untuk data laporan akan
-                        diimplementasikan pada Lab 12.
-                    </p>
-
-                </div>
-
-            </section>
-
-            <aside class="col-12 col-lg-3 d-none d-lg-block">
-
-                <div class="card border-0 p-3 shadow-sm sticky-top"
-                    style="top: 20px;">
-
-                    <h6 class="fw-bold">
-
-                        <i class="bi bi-info-circle-fill text-primary me-2"></i>
-
-                        Pengumuman
-
-                    </h6>
+                    </div>
 
                 </div>
 
-            </aside>
+            </div>
+        `;
 
-        </div>
-    `
-};
-
-function handleRouting() {
-
-    const hash = window.location.hash || '#login';
-
-    document.getElementById('app-content').innerHTML =
-        routes[hash] || routes['#login'];
-
-    if (
-        hash === '#login' &&
-        typeof setupLoginForm === 'function'
-    ) {
+        // PENTING
         setupLoginForm();
     }
 }
-
-window.addEventListener('hashchange', handleRouting);
-
-window.addEventListener('DOMContentLoaded', handleRouting);
