@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from rest_framework import viewsets, status, permissions, generics
 from rest_framework.response import Response
 
@@ -13,11 +14,20 @@ class ReportViewSet(viewsets.ModelViewSet):
     serializer_class = ReportSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    def get_permissions(self):
+        # Development-only: allow unauthenticated list access when DEBUG=True
+        if settings.DEBUG and getattr(self, 'action', None) == 'list':
+            return [permissions.AllowAny()]
+        return super().get_permissions()
+
     # ==========================================
     # LIST & DETAIL
     # ==========================================
     def get_queryset(self):
         user = self.request.user
+        # Development override: saat DEBUG=True, izinkan endpoint `list` melihat semua laporan
+        if settings.DEBUG and getattr(self, 'action', None) == 'list':
+            return Report.objects.all()
 
         # Jika belum login
         if not user or user.is_anonymous:

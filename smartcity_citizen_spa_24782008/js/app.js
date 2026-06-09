@@ -214,19 +214,41 @@ function switchTab(tabName, element) {
 // 🌟 INSTRUKSI LAB 3: Mengambil list data terpaginasi & memicu update UI
 async function loadDashboardData(tab, page) {
   const container = document.getElementById("reports-container");
+  const pageSize = 10;
 
   try {
-    const queryUrl = (tab === 'all') ? `/api/reports/?page=${page}` : `/api/reports/?tab=${tab}&page=${page}`;
+    // Ambil banyak data dari backend (atau mock) agar kita bisa lakukan filter client-side
+    const queryUrl = `/api/reports/?page_size=1000`;
     const response = await requestAPI(queryUrl, "GET");
 
     if (!response.ok) throw new Error("Gagal mengambil data");
     const data = await response.json();
 
-    const actualReports = data.results ? data.results : data;
+    const allReports = data.results ? data.results : data;
 
-    renderList(actualReports);       
-    renderPagination(data.count || actualReports.length);   
-    loadSummaryStats(); // Memanggil rekap statistik di sidebar             
+    // Filter berdasarkan tab (client-side)
+    let filtered = [];
+    if (tab === 'all') {
+      filtered = allReports;
+    } else if (tab === 'my_reports') {
+      filtered = allReports.filter(r => r.is_owner);
+    } else if (tab === 'feed') {
+      // Feed: tampilkan laporan publik/non-draft
+      filtered = allReports.filter(r => {
+        const st = (r.status || '').toString().toUpperCase();
+        return st !== 'DRAFT';
+      });
+    } else {
+      filtered = allReports;
+    }
+
+    const totalCount = filtered.length;
+    const startIdx = (page - 1) * pageSize;
+    const pageItems = filtered.slice(startIdx, startIdx + pageSize);
+
+    renderList(pageItems);
+    renderPagination(totalCount);
+    loadSummaryStats(allReports); // kirim semua item untuk rekap statistik
 
   } catch (err) {
     container.innerHTML = `<div class="alert alert-danger">Error: ${err.message}</div>`;
@@ -285,16 +307,22 @@ function renderList(reports) {
 }
 
 // 🌟 INSTRUKSI LAB 4: Mekanisme Bypass Paginasi khusus rekap statistik
-async function loadSummaryStats() {
+async function loadSummaryStats(allItems = null) {
   try {
-    const response = await requestAPI(`/api/reports/?tab=my_reports&page_size=1000`, "GET");
-    if (!response.ok) return;
-    const data = await response.json();
-    const allItems = data.results || data || [];
+    let items = allItems;
+    if (!items) {
+      const response = await requestAPI(`/api/reports/?page_size=1000`, "GET");
+      if (!response.ok) return;
+      const data = await response.json();
+      items = data.results || data || [];
+    }
 
-    const totalDraft = allItems.filter(r => r.status && r.status.toUpperCase() === "DRAFT").length;
-    const totalDiproses = allItems.filter(r => r.status && (r.status.toUpperCase() === "DIPROSES" || r.status.toUpperCase() === "VERIFIED")).length;
-    const totalSelesai = allItems.filter(r => r.status && (r.status.toUpperCase() === "SELESAI" || r.status.toUpperCase() === "RESOLVED")).length;
+    // Statistik "Saya" seharusnya berdasarkan laporan milik user (is_owner)
+    const myItems = items.filter(r => r.is_owner);
+
+    const totalDraft = myItems.filter(r => r.status && r.status.toUpperCase() === "DRAFT").length;
+    const totalDiproses = myItems.filter(r => r.status && (r.status.toUpperCase() === "DIPROSES" || r.status.toUpperCase() === "VERIFIED")).length;
+    const totalSelesai = myItems.filter(r => r.status && (r.status.toUpperCase() === "SELESAI" || r.status.toUpperCase() === "RESOLVED")).length;
 
     document.getElementById("stats-draft").innerText = totalDraft;
     document.getElementById("stats-diproses").innerText = totalDiproses;
