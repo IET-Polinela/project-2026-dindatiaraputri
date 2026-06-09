@@ -9,25 +9,28 @@ from rest_framework_simplejwt.views import (
 )
 
 urlpatterns = [
-    # Admin
+    # Admin Panel
     path('admin/', admin.site.urls),
 
-    # Main App
+    # Main App (Halaman bawaan Django jika ada)
     path('', include('main_app.urls')),
 
     # About & Contacts
     path('about/', include('about.urls')),
     path('contacts/', include('contacts.urls')),
 
-    # Dashboard
+    # Dashboard App Template HTML biasa
     path('dashboard/', include('dashboard_24782008.urls')),
 
-    # DRF API
+    # =====================================================================
+    # PUSAT KENDALI API: Mengarah ke main_app.api_urls sesuai arsitekturmu
+    # =====================================================================
     path('api/', include('main_app.api_urls')),
 
+    # Browser Auth untuk Django REST Framework (Browsable API)
     path('api-auth/', include('rest_framework.urls')),
 
-    # Authentication
+    # Authentication Session-Based (Bawaan Template Django)
     path(
         'login/',
         auth_views.LoginView.as_view(
@@ -44,7 +47,7 @@ urlpatterns = [
         name='logout'
     ),
 
-    # JWT Authentication API
+    # JWT Authentication API (Dipakai oleh auth.js di Front-End SPA)
     path(
         'api/token/',
         TokenObtainPairView.as_view(),

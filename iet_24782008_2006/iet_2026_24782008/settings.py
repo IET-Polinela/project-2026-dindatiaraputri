@@ -125,3 +125,4 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
     'AUTH_HEADER_TYPES': ('Bearer',), # Format di header: Bearer <token>
 }
+
