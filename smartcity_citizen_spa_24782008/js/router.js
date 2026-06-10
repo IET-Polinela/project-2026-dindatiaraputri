@@ -44,10 +44,10 @@ export function router() {
         }
 
         /* Layout Grid 3 Kolom */
-        .dashboard-row { display: flex; gap: 24px; align-items: flex-start; }
-        .col-left { width: 260px; } 
-        .col-center { flex: 1 1 auto; } 
-        .col-right { width: 300px; }
+        .dashboard-row { display: flex; gap: 24px; align-items: flex-start; flex-direction: row; }
+        .col-left { width: 260px; order: 0; } 
+        .col-center { flex: 1 1 auto; order: 1; } 
+        .col-right { width: 300px; order: 2; }
 
         @media (max-width: 992px) { 
           .dashboard-row { flex-direction: column; } 
@@ -241,19 +241,38 @@ export function router() {
     }
 
   } else {
-    // --- LOGIN PAGE TEMA KUNING ---
+    // --- LOGIN PAGE (BLUE THEME) ---
     app.innerHTML = `
-      <div class="container mt-5">
+      <style>
+        body { background-color: #f3f6fb !important; }
+        .topbar-blue { background: linear-gradient(90deg, #0d6efd, #0b5ed7); color: #fff; padding: 10px 0; }
+        .topbar-blue .brand { color: #fff; font-weight: 700; font-size: 1.25rem; }
+        .login-card { max-width: 460px; margin: 60px auto; border-radius: 12px; box-shadow: 0 10px 30px rgba(16,24,40,0.08); }
+        .login-card .card-body { padding: 30px; }
+        .login-card h3 { color: #0d6efd; }
+      </style>
+
+      <nav class="topbar-blue">
+        <div class="container d-flex justify-content-between align-items-center">
+          <div class="brand">IET City Portal</div>
+          <div>
+            <a class="btn btn-outline-light btn-sm me-2" href="#login">Masuk</a>
+            <a class="btn btn-light btn-sm" href="#register">Daftar</a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="container">
         <div class="row justify-content-center">
-          <div class="col-md-4">
-            <div class="card p-3">
+          <div class="col-12 col-md-8 col-lg-6">
+            <div class="card p-0 login-card">
               <div class="card-body">
-                <h3 class="text-center mb-4" style="color: #574B14;"><i class="bi bi-sun-fill text-warning"></i> Login Portal</h3>
+                <h3 class="text-center mb-4">Login Warga</h3>
                 <form id="loginForm">
                   <input type="text" id="username" class="form-control mb-2" placeholder="Username" required>
                   <input type="password" id="password" class="form-control mb-3" placeholder="Password" required>
-                  <button type="submit" class="btn btn-primary w-100 mb-2">Login</button>
-                  <button type="button" id="demoLoginBtn" class="btn btn-outline-secondary w-100" style="border-radius:12px; color:#574B14; border-color:#FFEAA7;">Masuk (Demo)</button>
+                  <button type="submit" class="btn btn-primary w-100 mb-2">Masuk</button>
+                  <button type="button" id="demoLoginBtn" class="btn btn-outline-secondary w-100">Masuk (Demo)</button>
                 </form>
               </div>
             </div>

@@ -21,23 +21,8 @@ export async function requestAPI(endpoint, method = "GET", bodyData = null) {
         config.body = JSON.stringify(bodyData);
     }
 
-    // Jika dijalankan di Live Server (port 5500) dan endpoint adalah daftar laporan,
-    // paksa gunakan mock lokal agar semua laporan (demo) muncul di UI.
-    if (typeof window !== 'undefined' && window.location && window.location.port === '5500' && endpoint && endpoint.startsWith('/api/reports')) {
-        try {
-            const mockResp = await fetch('/mock_reports.json');
-            if (mockResp.ok) {
-                const mockData = await mockResp.json().catch(() => ([]));
-                return new Response(JSON.stringify(mockData), {
-                    status: 200,
-                    headers: { 'Content-Type': 'application/json' }
-                });
-            }
-        } catch (e) {
-            console.warn('Mock direct fetch failed:', e);
-        }
-        // jika mock gagal, lanjut ke fetch ke backend biasa
-    }
+    // NOTE: For live usage we prefer calling the real backend (BASE_URL + endpoint).
+    // A mock fallback is still attempted only if the backend request fails.
 
     try {
         const response = await fetch(BASE_URL + endpoint, config);

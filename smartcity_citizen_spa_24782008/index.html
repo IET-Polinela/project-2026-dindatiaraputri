@@ -185,8 +185,37 @@
 
     <div id="app" class="container py-4"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="module" src="js/app.js"></script>
+        <!-- Fallback inline UI: shows a simple blue login while module loads or if module fails -->
+        <script>
+                (function(){
+                        try {
+                                const app = document.getElementById('app');
+                                if (!app) return;
+                                app.innerHTML = `
+                                        <style>
+                                            .blue-topbar { background: linear-gradient(90deg,#0d6efd,#0b5ed7); color:#fff; padding:10px 0; }
+                                            .blue-login-wrapper { background:#f3f6fb; padding:40px 0; display:flex; justify-content:center; }
+                                            .blue-card { max-width:480px; width:100%; border-radius:12px; padding:24px; box-shadow:0 10px 30px rgba(16,24,40,0.06); background:#fff }
+                                        </style>
+                                        <div class="blue-topbar"><div class="container"><strong>IET City Portal</strong></div></div>
+                                        <div class="blue-login-wrapper"><div class="container"><div class="blue-card">
+                                            <h3 style="color:#0d6efd; text-align:center;">Login Warga</h3>
+                                            <form id="loginFormFallback">
+                                                <input id="usernameFallback" placeholder="Username" style="width:100%;padding:8px;margin:10px 0;border-radius:8px;border:1px solid #ddd">
+                                                <input id="passwordFallback" type="password" placeholder="Password" style="width:100%;padding:8px;margin:10px 0;border-radius:8px;border:1px solid #ddd">
+                                                <div style="display:flex;gap:8px;margin-top:12px;"><button id="btnDemoFallback" style="flex:1;padding:10px;border-radius:8px;border:1px solid #0d6efd;background:#0d6efd;color:#fff">Masuk</button></div>
+                                            </form>
+                                        </div></div></div>
+                                `;
+                                // Demo button behavior: set demo token and go to dashboard hash
+                                const demoBtn = document.getElementById('btnDemoFallback');
+                                if (demoBtn) demoBtn.addEventListener('click', function(e){ e.preventDefault(); localStorage.setItem('access_token','demo-token'); window.location.hash = '#dashboard'; });
+                        } catch (e) { console.warn('Fallback UI injection failed', e); }
+                })();
+        </script>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script type="module" src="js/app.js"></script>
 
 </body>
 </html>
