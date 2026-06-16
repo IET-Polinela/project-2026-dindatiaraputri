@@ -1,5 +1,5 @@
 const DEFAULT_HOST = "103.151.63.71:8011";
-const BASE_URL = `${DEFAULT_PROTOCOL}//${DEFAULT_HOST}`;
+const BASE_URL = `http://${DEFAULT_HOST}`;
 
 export async function requestAPI(endpoint, method = "GET", bodyData = null) {
     const token = localStorage.getItem("access_token");
