@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9ff;
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 20px;
+        }
+
+        .container {
+            width: 90%;
+            margin: auto;
+        }
+
+        .chart-box {
+            width: 360px;
+            height: 380px; 
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin: 20px;
+            display: inline-block;
+        }
+
+        /* Styling Tambahan untuk Search & Modal */
+        .search-container {
+            margin: 20px auto;
+            width: 80%;
+        }
+
+        #liveSearch {
+            padding: 10px;
+            width: 100%;
+            border-radius: 20px;
+            border: 1px solid #cdb4db;
+            outline: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 15px;
+            width: 50%;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            text-align: left;
+        }
+
+        .badge {
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Warna Status */
+        .status-resolved { background-color: #28a745; }
+        .status-reported { background-color: #6c757d; }
+        .status-inprogress { background-color: #ffc107; }
+        .status-verified { background-color: #17a2b8; }
+
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th {
+            background: #cdb4db;
+            color: white;
+            padding: 10px;
+        }
+
+        td {
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background: #f1f1f1;
+        }
+
+        .btn-detail {
+            background-color: #cdb4db;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>📊 Dashboard Laporan</h1>
+
+<div class="container">
+    <!-- CHART -->
+    <div class="chart-box">
+        <h3>Status</h3>
+        <canvas id="statusChart" width="300" height="300"></canvas>
+    </div>
+
+    <div class="chart-box">
+        <h3>Kategori</h3>
+        <canvas id="categoryChart" width="300" height="300"></canvas>
+    </div>
+</div>
+
+<!-- FITUR LIVE SEARCH -->
+<div class="search-container">
+    <h3>🔍 Live Search Laporan</h3>
+    <input type="text" id="liveSearch" placeholder="Ketik kata kunci untuk memfilter laporan...">
+</div>
+
+<!-- TABLE -->
+<h3>📄 5 Laporan Terbaru (REPORTED)</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Judul</th>
+            <th>Kategori</th>
+            <th>Status</th>
+            <th>Aksi</th>
+        </tr>
+    </thead>
+    <tbody id="reportedTable"></tbody>
+</table>
+
+<h3>📄 5 Laporan Selesai (RESOLVED)</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Judul</th>
+            <th>Kategori</th>
+            <th>Status</th>
+            <th>Aksi</th>
+        </tr>
+    </thead>
+    <tbody id="resolvedTable"></tbody>
+</table>
+
+<!-- MODAL DETAIL -->
+<div id="detailModal" class="modal">
+    <div class="modal-content">
+        <h2 id="modalTitle">Detail Laporan</h2>
+        <hr>
+        <p><strong>Kategori:</strong> <span id="modalCategory"></span></p>
+        <p><strong>Lokasi:</strong> <span id="modalLocation"></span></p>
+        <p><strong>Status:</strong> <span id="modalStatus" class="badge"></span></p>
+        <p><strong>Deskripsi:</strong></p>
+        <p id="modalDescription"></p>
+        <button class="btn-detail" onclick="closeModal()">Tutup</button>
+    </div>
+</div>
+
+<script>
+// Fungsi untuk Modal
+function openDetail(id) {
+    fetch(`/api/report/${id}/`)
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('modalTitle').innerText = data.title;
+        document.getElementById('modalCategory').innerText = data.category;
+        document.getElementById('modalLocation').innerText = data.location;
+        document.getElementById('modalDescription').innerText = data.description;
+        
+        const statusEl = document.getElementById('modalStatus');
+        statusEl.innerText = data.status;
+        statusEl.className = 'badge status-' + data.status.toLowerCase().replace('_', '');
+        
+        document.getElementById('detailModal').style.display = "block";
+    });
+}
+
+function closeModal() {
+    document.getElementById('detailModal').style.display = "none";
+}
+
+// Live Search Logic
+document.getElementById('liveSearch').addEventListener('keyup', function() {
+    let filter = this.value.toLowerCase();
+    let rows = document.querySelectorAll('tbody tr');
+    
+    rows.forEach(row => {
+        let text = row.innerText.toLowerCase();
+        row.style.display = text.includes(filter) ? '' : 'none';
+    });
+});
+
+fetch('/api/dashboard/')
+.then(response => response.json())
+.then(data => {
+
+    // STATUS CHART (Diubah ke Doughnut agar sesuai instruksi)
+    const statusLabels = data.status.map(item => item.status);
+    const statusValues = data.status.map(item => item.total);
+
+    new Chart(document.getElementById('statusChart'), {
+        type: 'doughnut',
+        data: {
+            labels: statusLabels,
+            datasets: [{
+                data: statusValues,
+                backgroundColor: ['#A3C4F3', '#FFAFCC', '#CDB4DB', '#FFD6A5']
+            }]
+        },
+        options: {
+            responsive: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+
+    // CATEGORY CHART
+    const categoryLabels = data.category.map(item => item.category);
+    const categoryValues = data.category.map(item => item.total);
+
+    new Chart(document.getElementById('categoryChart'), {
+        type: 'bar',
+        data: {
+            labels: categoryLabels,
+            datasets: [{
+                label: 'Jumlah',
+                data: categoryValues,
+                backgroundColor: ['#BDE0FE', '#FFC8DD', '#DDBDF1', '#FFE5B4', '#CAFFBF']
+            }]
+        },
+        options: {
+            responsive: false,
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+
+    // Fungsi Render Tabel dengan Tombol Detail
+    const renderTable = (tbody, list) => {
+        list.forEach(item => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${item.title}</td>
+                    <td>${item.category}</td>
+                    <td><span class="badge status-${item.status.toLowerCase().replace('_', '')}">${item.status}</span></td>
+                    <td><button class="btn-detail" onclick="openDetail('${item.id || item.pk || 0}')">Detail</button></td>
+                </tr>
+            `;
+        });
+    };
+
+    renderTable(document.getElementById('reportedTable'), data.reported);
+    renderTable(document.getElementById('resolvedTable'), data.resolved);
+});
+</script>
+
+</body>
+</html>

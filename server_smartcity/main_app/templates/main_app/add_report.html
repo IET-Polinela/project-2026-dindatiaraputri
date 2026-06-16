@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tambah Laporan</title>
+    <style>
+        body {
+            background-color: #fff0f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 30px;
+        }
+
+        /* Style untuk Django Messages (Alert) */
+        .messages {
+            width: 350px;
+            list-style: none;
+            padding: 0;
+            margin-bottom: 15px;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            background-color: #fce4ec;
+            color: #d81b60;
+            border: 1px solid #f8bbd0;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        form {
+            background-color: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(255, 182, 193, 0.4);
+            width: 350px;
+            border: 2px solid #ffb6c1;
+        }
+
+        h2 { color: #ff69b4; text-align: center; }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 2px solid #ffe4e1;
+            border-radius: 10px;
+            box-sizing: border-box;
+        }
+
+
+        /* Style Tombol & Loading */
+        .button-row { display:flex; gap:10px; margin-top:15px }
+        .submit-btn { flex:1; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; display:flex; justify-content:center; align-items:center }
+        #btn-submit { background-color: #ffb6c1; color: white; border: none; }
+        #btn-draft { background-color: white; color: #ff69b4; border: 2px solid #ffb6c1 }
+
+        .submit-btn:disabled { opacity: 0.7; cursor: not-allowed }
+
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #ff69b4;
+            border-radius: 50%;
+            width: 15px;
+            height: 15px;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+            display: none; /* Sembunyi secara default */
+        }
+
+        .loader.small { width:12px; height:12px; border-width:2px }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li class="alert">{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <form method="POST" id="reportForm">
+        <h2>Tambah Laporan</h2>
+        {% csrf_token %}
+        {{ form.as_p }}
+        
+        <div class="button-row">
+            <button type="submit" name="action" value="draft" class="submit-btn" id="btn-draft">
+                <span class="loader small" id="loader-draft"></span>
+                <span>Simpan sebagai Draft</span>
+            </button>
+            <button type="submit" name="action" value="submit" class="submit-btn" id="btn-submit">
+                <span class="loader" id="loader"></span>
+                <span id="btn-text">Simpan</span>
+            </button>
+        </div>
+    </form>
+
+    <a href="{% url 'report_list' %}" style="margin-top: 20px; color: #db7093; text-decoration: none;">Kembali</a>
+
+    <script>
+        // Script untuk Loading Feedback per tombol (Draft / Submit)
+        const submitButtons = document.querySelectorAll('.submit-btn');
+        submitButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Nonaktifkan semua tombol setelah klik
+                submitButtons.forEach(b => b.disabled = true);
+                // Tampilkan loader hanya di tombol yang diklik
+                const loader = btn.querySelector('.loader');
+                const textEl = btn.querySelector('span:last-child');
+                if (loader) loader.style.display = 'block';
+                if (textEl) {
+                    if (btn.value === 'draft') textEl.innerText = 'Menyimpan...';
+                    else textEl.innerText = 'Mengirim...';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
