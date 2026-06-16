@@ -106,7 +106,7 @@ window.fetchAndRenderReports = async function () {
     try {
         const tab = window.currentDashboardTab || 'my_reports';
         const resp = await requestAPI(`/api/reports/?tab=${encodeURIComponent(tab)}`, 'GET');
-        const data = await resp.json().catch(() => []);
+        const data = resp.data || [];
         const reports = Array.isArray(data) ? data : (data.results || []);
         window.renderDashboard(reports);
     } catch (err) { console.error("Gagal memuat:", err); }
