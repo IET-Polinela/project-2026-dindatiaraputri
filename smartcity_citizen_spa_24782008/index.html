@@ -3,9 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
-    
     <title>Citizen Portal</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -17,25 +14,28 @@
         body {
             margin: 0;
             padding: 0;
-            background-color: #FFF9E6 !important;
+            background-color: #FFF9E6 !important; /* Mengubah background utama jadi kuning soft */
             font-family: 'Poppins', sans-serif !important;
             position: relative;
             min-height: 100vh;
             overflow-x: hidden;
         }
 
+        /* Mengubah semua kartu/form menjadi aesthetic */
         .card, #loginForm, [class*="login-card"], .modal-content {
             background-color: #ffffff !important;
-            border: 2px solid #FFEAA7 !important;
-            border-radius: 24px !important;
+            border: 2px solid #FFEAA7 !important; /* Border kuning pastel */
+            border-radius: 24px !important; /* Membuat sudut membulat lucu */
             box-shadow: 0 10px 25px rgba(230, 180, 80, 0.12) !important;
         }
 
+        /* Gaya teks judul agar senada */
         h1, h2, h3, .card-title, .modal-title {
             color: #574B14 !important;
             font-weight: 600 !important;
         }
 
+        /* Gaya tombol Bootstrap default menjadi warna kuning madu */
         .btn-primary, button[type="submit"], #btnSubmit {
             background-color: #FFD23F !important;
             color: #574B14 !important;
@@ -53,6 +53,7 @@
             box-shadow: 0 6px 15px rgba(255, 210, 63, 0.35) !important;
         }
 
+        /* Input field membulat yang manis */
         .form-control, .form-select, input[type="text"], input[type="password"], textarea {
             border: 2px solid #FFEAA7 !important;
             border-radius: 12px !important;
@@ -66,18 +67,31 @@
             box-shadow: 0 0 8px rgba(255, 210, 63, 0.2) !important;
         }
 
+        /* --- DEKORASI BUNGA MATAHARI CSS MURNI --- */
         .sunflower-decor {
             position: fixed;
             width: 120px;
             height: 120px;
             opacity: 0.65;
             pointer-events: none;
-            z-index: 0;
+            z-index: 0; /* PERBAIKAN: Diubah ke 0 agar benar-benar berada di belakang form modal */
         }
         
-        .sf-top-right { top: -25px; right: -25px; transform: rotate(15deg); }
-        .sf-bottom-left { bottom: -25px; left: -25px; transform: rotate(-15deg); }
+        /* Posisi bunga di pojok kanan atas */
+        .sf-top-right {
+            top: -25px;
+            right: -25px;
+            transform: rotate(15deg);
+        }
 
+        /* Posisi bunga di pojok kiri bawah */
+        .sf-bottom-left {
+            bottom: -25px;
+            left: -25px;
+            transform: rotate(-15deg);
+        }
+
+        /* Bagian tengah bunga matahari (Cokelat) */
         .sunflower-center {
             width: 50px;
             height: 50px;
@@ -90,6 +104,7 @@
             box-shadow: inset 0 0 8px rgba(0,0,0,0.3);
         }
 
+        /* Wadah kelopak dengan animasi berputar pelan */
         .petal-container {
             position: relative;
             width: 120px;
@@ -97,6 +112,7 @@
             animation: sf-spin 25s linear infinite; 
         }
 
+        /* Kelopak bunga */
         .petal {
             position: absolute;
             width: 20px;
@@ -108,6 +124,7 @@
             transform-origin: bottom center;
         }
 
+        /* Rotasi melingkar kelopak */
         .petal:nth-child(1) { transform: rotate(0deg); }
         .petal:nth-child(2) { transform: rotate(30deg); }
         .petal:nth-child(3) { transform: rotate(60deg); }
@@ -121,8 +138,11 @@
         .petal:nth-child(11) { transform: rotate(300deg); }
         .petal:nth-child(12) { transform: rotate(330deg); }
 
-        @keyframes sf-spin { 100% { transform: rotate(360deg); } }
+        @keyframes sf-spin {
+            100% { transform: rotate(360deg); }
+        }
 
+        /* --- KUSTOM NAVIGASI TAB PIL KUNING ESTETIK --- */
         .nav-pills .nav-link {
             color: #7A691A !important;
             background-color: transparent;
@@ -135,6 +155,11 @@
             color: #574B14 !important;
             border-color: #FFD23F !important;
             box-shadow: 0 4px 12px rgba(255, 210, 63, 0.15) !important;
+        }
+
+        .nav-pills .nav-link:hover:not(.active) {
+            background-color: #FFFDF6 !important;
+            color: #574B14 !important;
         }
     </style>
 </head>
@@ -160,35 +185,37 @@
 
     <div id="app" class="container py-4"></div>
 
-    <script>
-            (function(){
-                    try {
-                            const app = document.getElementById('app');
-                            if (!app) return;
-                            app.innerHTML = `
-                                    <style>
-                                        .blue-topbar { background: linear-gradient(90deg,#0d6efd,#0b5ed7); color:#fff; padding:10px 0; }
-                                        .blue-login-wrapper { background:#f3f6fb; padding:40px 0; display:flex; justify-content:center; }
-                                        .blue-card { max-width:480px; width:100%; border-radius:12px; padding:24px; box-shadow:0 10px 30px rgba(16,24,40,0.06); background:#fff }
-                                    </style>
-                                    <div class="blue-topbar"><div class="container"><strong>IET City Portal</strong></div></div>
-                                    <div class="blue-login-wrapper"><div class="container"><div class="blue-card">
-                                        <h3 style="color:#0d6efd; text-align:center;">Login Warga</h3>
-                                        <form id="loginFormFallback">
-                                            <input id="usernameFallback" placeholder="Username" style="width:100%;padding:8px;margin:10px 0;border-radius:8px;border:1px solid #ddd">
-                                            <input id="passwordFallback" type="password" placeholder="Password" style="width:100%;padding:8px;margin:10px 0;border-radius:8px;border:1px solid #ddd">
-                                            <div style="display:flex;gap:8px;margin-top:12px;"><button id="btnDemoFallback" style="flex:1;padding:10px;border-radius:8px;border:1px solid #0d6efd;background:#0d6efd;color:#fff">Masuk</button></div>
-                                        </form>
-                                    </div></div></div>
-                            `;
-                            const demoBtn = document.getElementById('btnDemoFallback');
-                            if (demoBtn) demoBtn.addEventListener('click', function(e){ e.preventDefault(); localStorage.setItem('access_token','demo-token'); window.location.hash = '#dashboard'; });
-                    } catch (e) { console.warn('Fallback UI injection failed', e); }
-            })();
-    </script>
+        <!-- Fallback inline UI: shows a simple blue login while module loads or if module fails -->
+        <script>
+                (function(){
+                        try {
+                                const app = document.getElementById('app');
+                                if (!app) return;
+                                app.innerHTML = `
+                                        <style>
+                                            .blue-topbar { background: linear-gradient(90deg,#0d6efd,#0b5ed7); color:#fff; padding:10px 0; }
+                                            .blue-login-wrapper { background:#f3f6fb; padding:40px 0; display:flex; justify-content:center; }
+                                            .blue-card { max-width:480px; width:100%; border-radius:12px; padding:24px; box-shadow:0 10px 30px rgba(16,24,40,0.06); background:#fff }
+                                        </style>
+                                        <div class="blue-topbar"><div class="container"><strong>IET City Portal</strong></div></div>
+                                        <div class="blue-login-wrapper"><div class="container"><div class="blue-card">
+                                            <h3 style="color:#0d6efd; text-align:center;">Login Warga</h3>
+                                            <form id="loginFormFallback">
+                                                <input id="usernameFallback" placeholder="Username" style="width:100%;padding:8px;margin:10px 0;border-radius:8px;border:1px solid #ddd">
+                                                <input id="passwordFallback" type="password" placeholder="Password" style="width:100%;padding:8px;margin:10px 0;border-radius:8px;border:1px solid #ddd">
+                                                <div style="display:flex;gap:8px;margin-top:12px;"><button id="btnDemoFallback" style="flex:1;padding:10px;border-radius:8px;border:1px solid #0d6efd;background:#0d6efd;color:#fff">Masuk</button></div>
+                                            </form>
+                                        </div></div></div>
+                                `;
+                                // Demo button behavior: set demo token and go to dashboard hash
+                                const demoBtn = document.getElementById('btnDemoFallback');
+                                if (demoBtn) demoBtn.addEventListener('click', function(e){ e.preventDefault(); localStorage.setItem('access_token','demo-token'); window.location.hash = '#dashboard'; });
+                        } catch (e) { console.warn('Fallback UI injection failed', e); }
+                })();
+        </script>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="module" src="js/app.js?v=20260616-2"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script type="module" src="js/app.js?v=20260616-2"></script>
 
 </body>
 </html>
