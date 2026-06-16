@@ -1,4 +1,4 @@
-const BASE_URL = "http://103.151.63.71:8011/api";
+const BASE_URL = "http://103.151.63.71:8011";
 
 export async function requestAPI(endpoint, method = "GET", bodyData = null) {
     const token = localStorage.getItem("access_token");
