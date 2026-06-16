@@ -4,55 +4,67 @@ export function setupLoginForm() {
     const form = document.getElementById("loginForm");
     if (!form) return;
 
-    form.addEventListener("submit", async function (event) {
+    form.addEventListener("submit", async (event) => {
         event.preventDefault();
 
-        try {
-            const isRegisterPage = window.location.hash === "#register";
-            const username = document.getElementById("username").value.trim();
-            const password = document.getElementById("password").value;
-            const email = document.getElementById("email")?.value.trim();
+        const isRegisterPage = window.location.hash === "#register";
 
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value;
+        const email = document.getElementById("email")?.value?.trim();
+
+        try {
+
+            // ======================
+            // REGISTER
+            // ======================
             if (isRegisterPage) {
-                const response = await requestAPI(
+                const res = await requestAPI(
                     "/api/register/",
                     "POST",
                     { username, email, password }
                 );
 
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    const firstError = Object.values(errorData).flat()[0];
-                    throw new Error(firstError || "Registrasi gagal. Coba username/email lain.");
+                if (!res.ok) {
+                    const msg =
+                        Object.values(res.data || {}).flat?.()?.[0] ||
+                        res.data?.detail ||
+                        "Registrasi gagal";
+                    throw new Error(msg);
                 }
 
-                alert("Registrasi berhasil! Silakan login.");
+                alert("Registrasi berhasil!");
                 window.location.hash = "#login";
                 return;
             }
 
-            // Memanggil path lengkap sesuai urls.py (api/token/)
-            const response = await requestAPI(
-                "/api/token/", 
+            // ======================
+            // LOGIN
+            // ======================
+            const res = await requestAPI(
+                "/api/token/",
                 "POST",
                 { username, password }
             );
 
-            // Cek jika response tidak sukses
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.detail || "Login gagal, periksa username/password.");
+            if (!res.ok) {
+                throw new Error(
+                    res.data?.detail || "Login gagal"
+                );
             }
 
-            const data = await response.json();
-            localStorage.setItem("access_token", data.access);
-            localStorage.setItem("refresh_token", data.refresh);
+            if (!res.data?.access || !res.data?.refresh) {
+                throw new Error("Token tidak valid dari server");
+            }
+
+            localStorage.setItem("access_token", res.data.access);
+            localStorage.setItem("refresh_token", res.data.refresh);
 
             alert("Login berhasil!");
             window.location.hash = "#dashboard";
 
         } catch (error) {
-            console.error("Detail Error:", error);
+            console.error("AUTH ERROR:", error);
             alert(error.message);
         }
     });
