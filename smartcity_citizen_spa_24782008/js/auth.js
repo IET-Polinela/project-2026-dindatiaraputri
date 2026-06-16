@@ -8,31 +8,34 @@ export function setupLoginForm() {
         event.preventDefault();
 
         const isRegisterPage = window.location.hash === "#register";
-
-        const username = document.getElementById("username").value.trim();
-        const password = document.getElementById("password").value;
+        const username = document.getElementById("username")?.value?.trim();
+        const password = document.getElementById("password")?.value;
         const email = document.getElementById("email")?.value?.trim();
 
         try {
+            // Panggil API dengan struktur yang konsisten
+            const res = await requestAPI(
+                isRegisterPage ? "/api/register/" : "/api/token/",
+                "POST",
+                isRegisterPage ? { username, email, password } : { username, password }
+            );
+
+            // PERBAIKAN: Cek apakah res ada dan valid sebelum mengakses properti
+            if (!res) {
+                throw new Error("Gagal terhubung ke server. Pastikan koneksi aman (HTTPS).");
+            }
 
             // ======================
             // REGISTER
             // ======================
             if (isRegisterPage) {
-                const res = await requestAPI(
-                    "/api/register/",
-                    "POST",
-                    { username, email, password }
-                );
-
                 if (!res.ok) {
                     const msg =
-                        Object.values(res.data || {}).flat?.()?.[0] ||
+                        (res.data && typeof res.data === 'object' ? Object.values(res.data).flat()?.[0] : null) ||
                         res.data?.detail ||
                         "Registrasi gagal";
                     throw new Error(msg);
                 }
-
                 alert("Registrasi berhasil!");
                 window.location.hash = "#login";
                 return;
@@ -41,16 +44,8 @@ export function setupLoginForm() {
             // ======================
             // LOGIN
             // ======================
-            const res = await requestAPI(
-                "/api/token/",
-                "POST",
-                { username, password }
-            );
-
             if (!res.ok) {
-                throw new Error(
-                    res.data?.detail || "Login gagal"
-                );
+                throw new Error(res.data?.detail || "Login gagal");
             }
 
             if (!res.data?.access || !res.data?.refresh) {
@@ -65,7 +60,8 @@ export function setupLoginForm() {
 
         } catch (error) {
             console.error("AUTH ERROR:", error);
-            alert(error.message);
+            // Menampilkan pesan error ke user agar tidak bingung
+            alert(error.message || "Terjadi kesalahan yang tidak diketahui.");
         }
     });
 }
