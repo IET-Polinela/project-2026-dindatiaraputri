@@ -1,290 +1,213 @@
 import { setupLoginForm } from "./auth.js";
+import { requestAPI } from "./api.js";
 
-export function router() {
-  const app = document.getElementById("app");
-  const hash = window.location.hash || "#login";
+/* =========================
+   STYLE HELPERS (DIPERTAHANKAN)
+========================= */
+function clearStyles() {
+    document.querySelectorAll("style[data-route-style]").forEach((style) => style.remove());
+}
 
-  if (hash === "#dashboard") {
-    app.innerHTML = `
-      <style>
-        /* === PERUBAHAN TEMA: FULL KUNING SOFT & SUNFLOWER === */
-        
-        /* Topbar Kuning Gradasi Lembut */
-        .topbar {
-          background: linear-gradient(90deg, #FFF9E6, #FFEAA7) !important;
-          color: #574B14 !important;
-          padding: 14px 24px;
-          border-radius: 16px;
-          margin-bottom: 24px;
-          box-shadow: 0 6px 18px rgba(230, 180, 80, 0.15);
-        }
-        .topbar .brand { 
-          color: #574B14 !important; 
-          font-weight: 700; 
-          font-size: 1.25rem;
-        }
-        .topbar .user-info {
-          color: #574B14;
-          font-size: 0.95rem;
-          display: flex;
-          align-items: center;
-          gap: 15px;
-        }
-        .topbar .btn-logout {
-          background: rgba(87, 75, 20, 0.08) !important;
-          color: #574B14 !important;
-          border: 1px solid rgba(87, 75, 20, 0.15) !important;
-          border-radius: 12px;
-          font-weight: 500;
-          padding: 4px 14px;
-          transition: all 0.2s;
-        }
-        .topbar .btn-logout:hover {
-          background: rgba(87, 75, 20, 0.18) !important;
-        }
+function injectStyle(cssContent) {
+    const style = document.createElement("style");
+    style.setAttribute("data-route-style", "true");
+    style.innerHTML = cssContent;
+    document.head.appendChild(style);
+}
 
-        /* Layout Grid 3 Kolom */
-        .dashboard-row { display: flex; gap: 24px; align-items: flex-start; flex-direction: row; }
-        .col-left { width: 260px; order: 0; } 
-        .col-center { flex: 1 1 auto; order: 1; } 
-        .col-right { width: 300px; order: 2; }
+/* =========================
+   GLOBAL ACTIONS (BARU & DIPERTAHANKAN)
+========================= */
+window.handleLogout = function () {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    window.location.hash = "#login";
+    window.location.reload();
+};
 
-        @media (max-width: 992px) { 
-          .dashboard-row { flex-direction: column; } 
-          .col-left, .col-right { width: 100%; } 
-        }
-
-        /* Styling Cards Aesthetic Soft Yellow */
-        .sidebar-card, .stats-card, .modal-content {
-          background-color: #ffffff !important;
-          border: 2px solid #FFEAA7 !important;
-          border-radius: 24px !important;
-          box-shadow: 0 10px 25px rgba(230, 180, 80, 0.12) !important;
-          padding: 20px;
-        }
-
-        .center-card {
-          border-radius: 24px !important;
-          padding: 24px !important;
-          background: #FFFDF6 !important;
-          border: 2px dashed #FFEAA7 !important;
-          box-shadow: 0 10px 25px rgba(230, 180, 80, 0.08) !important;
-          margin-bottom: 20px;
-        }
-
-        /* Tombol Utama (Warna Kuning Madu Cerah) */
-        .btn-laporan-baru, .btn-primary, #btnSubmit {
-          background-color: #FFD23F !important;
-          color: #574B14 !important;
-          border: none !important;
-          border-radius: 12px !important;
-          font-weight: 600 !important;
-          padding: 12px 20px !important;
-          box-shadow: 0 4px 12px rgba(255, 210, 63, 0.3) !important;
-          transition: all 0.3s ease !important;
-        }
-        .btn-laporan-baru:hover, .btn-primary:hover, #btnSubmit:hover {
-          background-color: #E6B822 !important;
-          transform: translateY(-2px) !important;
-          box-shadow: 0 6px 15px rgba(255, 210, 63, 0.4) !important;
-        }
-
-        /* Navigasi Menu Samping */
-        .nav-pills .nav-link {
-          color: #7A691A !important;
-          background-color: transparent;
-          transition: all 0.3s ease;
-          border: 2px solid transparent !important;
-          border-radius: 12px !important;
-          margin-bottom: 6px;
-        }
-        .nav-pills .nav-link.active {
-          background-color: #FFF9E6 !important;
-          color: #574B14 !important;
-          border-color: #FFD23F !important;
-          font-weight: 600 !important;
-          box-shadow: 0 4px 12px rgba(255, 210, 63, 0.15) !important;
-        }
-        .nav-pills .nav-link:hover:not(.active) {
-          background-color: #FFFDF6 !important;
-        }
-
-        /* Box Panel Statistik */
-        .stat-box { 
-          background: #FFFDF6; 
-          border-radius: 14px; 
-          padding: 14px 18px; 
-          margin-bottom: 12px; 
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          border: 1px solid #FFEAA7;
-        }
-        .stat-box strong { color: #574B14; font-weight: 600; }
-        .stat-count { font-size: 1.3rem; font-weight: 700; }
-        #stats-draft { color: #E6B822; } /* Kuning Tua */
-        #stats-diproses { color: #D4A373; } /* Cokelat Pastel */
-        #stats-selesai { color: #198754; } /* Tetap Hijau untuk penanda selesai */
-
-        /* Pagination Kuning */
-        .pagination .page-link {
-          color: #574B14 !important;
-          background-color: #ffffff;
-          border: 1px solid #FFEAA7;
-        }
-        .pagination .page-item.active .page-link {
-          background-color: #FFD23F !important;
-          border-color: #FFD23F !important;
-          color: #574B14 !important;
-        }
-      </style>
-
-      <div class="topbar d-flex justify-content-between align-items-center">
-        <div class="brand"><i class="bi bi-sun-fill text-warning me-1"></i> Smart City Portal</div>
-        <div class="user-info">
-          <button id="btnLogout" class="btn btn-logout btn-sm">Keluar</button>
-        </div>
-      </div>
-
-      <div class="dashboard-row">
-        
-        <div class="col-left">
-          <div class="card sidebar-card shadow-sm">
-            <button type="button" class="btn btn-laporan-baru w-100 mb-3 fw-bold" data-bs-toggle="modal" data-bs-target="#reportModal">
-              <i class="bi bi-plus-circle-fill me-2"></i> Laporan Baru
-            </button>
-            <div class="nav flex-column nav-pills" role="tablist">
-              <button class="nav-link active text-start py-2 px-3 mb-2" id="tab-myreport" onclick="switchDashboardTab('my_reports')">
-                <i class="bi bi-journal-text me-2"></i> Laporan Saya
-              </button>
-              <button class="nav-link text-start py-2 px-3 mb-2" id="tab-feed" onclick="switchDashboardTab('feed')">
-                <i class="bi bi-globe me-2"></i> Feed Kota
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-center">
-          <div class="center-card shadow-sm text-center">
-            <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
-              <i class="bi bi-shield-check fs-3" style="color: #574B14;"></i>
-              <h3 class="m-0" style="color: #574B14 !important;">Autentikasi Berhasil Terhubung!</h3>
-            </div>
-            <p class="small m-0" style="color: #7A691A;">Seluruh fitur pelaporan kini siap digunakan.</p>
-          </div>
-
-          <div id="reports-container" class="d-flex flex-column gap-3"></div>
-
-          <div class="d-flex justify-content-center mt-4">
-            <nav><ul class="pagination m-0" id="pagination-container"></ul></nav>
-          </div>
-        </div>
-
-        <div class="col-right">
-          <div class="card stats-card shadow-sm">
-            <h5 class="fw-bold mb-3" style="color: #574B14 !important;"><i class="bi bi-bar-chart-fill me-2"></i>Statistik</h5>
-            <div class="stat-box"><strong>Draft:</strong><div id="stats-draft" class="stat-count">9</div></div>
-            <div class="stat-box"><strong>Diproses:</strong><div id="stats-diproses" class="stat-count">0</div></div>
-            <div class="stat-box"><strong>Selesai:</strong><div id="stats-selesai" class="stat-count">0</div></div>
-          </div>
-        </div>
-
-      </div>
-
-      <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content border-0 shadow">
-            <div class="modal-header border-0" style="background: #FFEAA7; border-top-left-radius:22px; border-top-right-radius:22px;">
-              <h5 class="modal-title fw-bold" id="reportModalLabel" style="color: #574B14 !important;"><i class="bi bi-pencil-square me-2"></i>Buat Laporan Baru</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-4" style="background-color: #ffffff; border-bottom-left-radius:22px; border-bottom-right-radius:22px;">
-              <form id="reportForm">
-                <div class="mb-3">
-                  <label for="inputTitle" class="form-label fw-bold small" style="color: #7A691A;">Judul Laporan</label>
-                  <input type="text" class="form-control" id="inputTitle" placeholder="Masukkan judul isu..." required>
-                </div>
-                <div class="mb-3">
-                  <label for="inputCategory" class="form-label fw-bold small" style="color: #7A691A;">Kategori</label>
-                  <select class="form-select" id="inputCategory" required>
-                    <option value="" disabled selected>Pilih Kategori...</option>
-                    <option value="Infrastruktur">Infrastruktur</option>
-                    <option value="Kebersihan">Kebersihan</option>
-                    <option value="Keamanan">Keamanan</option>
-                    <option value="Fasilitas Publik">Fasilitas Publik</option>
-                  </select>
-                </div>
-                <div class="mb-3">
-                  <label for="inputLocation" class="form-label fw-bold small" style="color: #7A691A;">Lokasi</label>
-                  <input type="text" class="form-control" id="inputLocation" placeholder="Lokasi kejadian..." required>
-                </div>
-                <div class="mb-3">
-                  <label for="inputDescription" class="form-label fw-bold small" style="color: #7A691A;">Deskripsi Laporan</label>
-                  <textarea class="form-control" id="inputDescription" rows="3" placeholder="Jelaskan detail masalah..." required></textarea>
-                </div>
-                <div class="d-flex justify-content-between mt-4">
-                  <button type="button" class="btn btn-outline-secondary fw-bold px-4" id="btnDraft" style="border-radius:12px; color:#574B14; border-color:#FFEAA7;">Simpan Draft</button>
-                  <button type="submit" class="btn btn-primary fw-bold px-4" id="btnSubmit">Ajukan <i class="bi bi-send-fill ms-1"></i></button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    // Trigger data UI
-    if (typeof window.initDashboardUI === "function") {
-      window.initDashboardUI();
+window.submitReport = async function (status) {
+    const normalizedStatus = normalizeStatus(status);
+    const data = {
+        title: document.getElementById("newTitle").value,
+        description: document.getElementById("newDesc").value,
+        location: document.getElementById("newLocation").value,
+        category: document.getElementById("newCategory").value,
+        status: normalizedStatus
+    };
+    const response = await requestAPI("/api/reports/", "POST", data);
+    if (response.ok) {
+        alert(`Laporan berhasil disimpan sebagai ${getStatusLabel(normalizedStatus)}!`);
+        document.getElementById("reportModal").style.display = "none";
+        window.fetchAndRenderReports();
     } else {
-      setTimeout(() => { if (typeof window.initDashboardUI === "function") window.initDashboardUI(); }, 50);
+        alert("Gagal mengirim laporan. Pastikan Anda sudah login.");
     }
+};
 
-  } else {
-    // --- LOGIN PAGE (BLUE THEME) ---
-    app.innerHTML = `
-      <style>
-        body { background-color: #f3f6fb !important; }
-        .topbar-blue { background: linear-gradient(90deg, #0d6efd, #0b5ed7); color: #fff; padding: 10px 0; }
-        .topbar-blue .brand { color: #fff; font-weight: 700; font-size: 1.25rem; }
-        .login-card { max-width: 460px; margin: 60px auto; border-radius: 12px; box-shadow: 0 10px 30px rgba(16,24,40,0.08); }
-        .login-card .card-body { padding: 30px; }
-        .login-card h3 { color: #0d6efd; }
-      </style>
+const STATUS_LABELS = {
+    DRAFT: "Draft",
+    REPORTED: "Reported",
+    VERIFIED: "Verified",
+    IN_PROGRESS: "In Progress",
+    RESOLVED: "Resolved"
+};
 
-      <nav class="topbar-blue">
-        <div class="container d-flex justify-content-between align-items-center">
-          <div class="brand">IET City Portal</div>
-          <div>
-            <a class="btn btn-outline-light btn-sm me-2" href="#login">Masuk</a>
-            <a class="btn btn-light btn-sm" href="#register">Daftar</a>
-          </div>
+function normalizeStatus(status) {
+    if (!status) return "DRAFT";
+    const normalized = String(status).trim().toUpperCase().replace(/\s+/g, "_");
+
+    if (normalized === "SUBMITTED") return "REPORTED";
+    return normalized;
+}
+
+function getStatusLabel(status) {
+    const normalized = normalizeStatus(status);
+    return STATUS_LABELS[normalized] || status || "Draft";
+}
+
+function getStatusBadgeClass(status) {
+    const normalized = normalizeStatus(status);
+    if (normalized === "RESOLVED") return "bg-success";
+    if (normalized === "VERIFIED" || normalized === "IN_PROGRESS") return "bg-info";
+    return "bg-warning";
+}
+
+/* =========================
+   DASHBOARD RENDER (DIPERTAHANKAN)
+========================= */
+window.renderDashboard = function (reports) {
+    const container = document.getElementById("reports-container");
+    if (!container) return;
+
+    container.innerHTML = reports.length > 0 ? reports.map(r => `
+        <div class="report-card">
+            <h6 class="fw-bold">${r.title || 'Tanpa Judul'}</h6>
+            <p class="small text-muted mb-1">${r.location || 'Lokasi tidak diketahui'}</p>
+            <p class="mb-2">${r.description || '-'}</p>
+            <span class="badge ${getStatusBadgeClass(r.status)}">${getStatusLabel(r.status)}</span>
         </div>
-      </nav>
+    `).join('') : '<p class="text-center py-5">Belum ada laporan.</p>';
 
-      <div class="container">
-        <div class="row justify-content-center">
-          <div class="col-12 col-md-8 col-lg-6">
-            <div class="card p-0 login-card">
-              <div class="card-body">
-                <h3 class="text-center mb-4">Login Warga</h3>
-                <form id="loginForm">
-                  <input type="text" id="username" class="form-control mb-2" placeholder="Username" required>
-                  <input type="password" id="password" class="form-control mb-3" placeholder="Password" required>
-                  <button type="submit" class="btn btn-primary w-100 mb-2">Masuk</button>
-                  <button type="button" id="demoLoginBtn" class="btn btn-outline-secondary w-100">Masuk (Demo)</button>
-                </form>
-              </div>
+    const statusCounts = reports.reduce((counts, report) => {
+        const status = normalizeStatus(report.status);
+        counts[status] = (counts[status] || 0) + 1;
+        return counts;
+    }, {});
+
+    document.getElementById('stats-total').innerText = reports.length;
+    document.getElementById('stats-draft').innerText = statusCounts.DRAFT || 0;
+    document.getElementById('stats-reported').innerText = statusCounts.REPORTED || 0;
+    document.getElementById('stats-verified').innerText = statusCounts.VERIFIED || 0;
+    document.getElementById('stats-progress').innerText = statusCounts.IN_PROGRESS || 0;
+    document.getElementById('stats-resolved').innerText = statusCounts.RESOLVED || 0;
+};
+
+window.fetchAndRenderReports = async function () {
+    try {
+        const tab = window.currentDashboardTab || 'my_reports';
+        const resp = await requestAPI(`/api/reports/?tab=${encodeURIComponent(tab)}`, 'GET');
+        const data = await resp.json().catch(() => []);
+        const reports = Array.isArray(data) ? data : (data.results || []);
+        window.renderDashboard(reports);
+    } catch (err) { console.error("Gagal memuat:", err); }
+};
+
+window.switchDashboardTab = function (tab) {
+    window.currentDashboardTab = tab;
+    document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+    document.getElementById(`tab-${tab}`).classList.add('active');
+    window.fetchAndRenderReports();
+};
+
+/* =========================
+   ROUTER (DIPERTAHANKAN & DITAMBAH)
+========================= */
+export function router() {
+    const app = document.getElementById("app");
+    const hash = window.location.hash || "#login";
+
+    if (window.reportPollingInterval) clearInterval(window.reportPollingInterval);
+    clearStyles(); 
+    app.innerHTML = ""; 
+
+    if (hash === "#dashboard") {
+        window.currentDashboardTab = window.currentDashboardTab || 'my_reports';
+        injectStyle(`
+            body { background: #FFFDF5 !important; }
+            .dashboard-container { padding: 30px; }
+            .report-card { background: white; padding: 20px; border-radius: 15px; border: 1px solid #FFEAA7; margin-bottom: 15px; }
+            .nav-link { cursor: pointer; color: #574B14; }
+            .nav-link.active { background: #FFD23F !important; color: #574B14 !important; font-weight: bold; }
+        `);
+
+        app.innerHTML = `
+            <div class="container-fluid dashboard-container">
+                <div class="row">
+                    <div class="col-lg-3">
+                        <button class="btn btn-warning w-100 mb-3 fw-bold" id="btnOpenModal">+ Laporan Baru</button>
+                        <div class="nav flex-column nav-pills mb-4">
+                            <button class="nav-link active" id="tab-my_reports" onclick="switchDashboardTab('my_reports')">Semua Laporan</button>
+                            <button class="nav-link" id="tab-feed" onclick="switchDashboardTab('feed')">Feed Kota</button>
+                        </div>
+                        <div class="card p-3 border-warning bg-light mb-3">
+                            <h6 class="fw-bold">Statistik Laporan</h6>
+                            <p>Total: <b id="stats-total">0</b></p>
+                            <p>Draft: <b id="stats-draft">0</b></p>
+                            <p>Reported: <b id="stats-reported">0</b></p>
+                            <p>Verified: <b id="stats-verified">0</b></p>
+                            <p>In Progress: <b id="stats-progress">0</b></p>
+                            <p>Resolved: <b id="stats-resolved">0</b></p>
+                        </div>
+                        <button class="btn btn-outline-danger w-100" onclick="handleLogout()">Logout</button>
+                    </div>
+                    <div class="col-lg-9" id="reports-container">Memuat data...</div>
+                </div>
             </div>
-          </div>
-        </div>
-      </div>
-    `;
-    setupLoginForm();
-    const demoBtn = document.getElementById("demoLoginBtn");
-    if (demoBtn) demoBtn.addEventListener("click", () => {
-      localStorage.setItem("access_token", "demo-token");
-      window.location.hash = "#dashboard";
-    });
-  }
+
+            <div id="reportModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000;">
+                <div style="background:white; margin:5% auto; padding:20px; width:400px; border-radius:15px;">
+                    <h4>Tambah Laporan</h4>
+                    <input type="text" id="newTitle" class="form-control mb-2" placeholder="Judul">
+                    <select id="newCategory" class="form-control mb-2">
+                        <option value="Sampah">Sampah</option>
+                        <option value="Infrastruktur">Infrastruktur</option>
+                        <option value="Lainnya">Lainnya</option>
+                    </select>
+                    <textarea id="newDesc" class="form-control mb-2" placeholder="Deskripsi"></textarea>
+                    <input type="text" id="newLocation" class="form-control mb-2" placeholder="Lokasi">
+                    <button class="btn btn-warning w-100" onclick="submitReport('REPORTED')">Kirim Laporan</button>
+                    <button class="btn btn-outline-warning w-100 mt-2" onclick="submitReport('DRAFT')">Simpan sebagai Draf</button>
+                    <button class="btn btn-secondary w-100 mt-2" onclick="document.getElementById('reportModal').style.display='none'">Batal</button>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('btnOpenModal').onclick = () => document.getElementById('reportModal').style.display = 'block';
+        window.fetchAndRenderReports();
+        window.reportPollingInterval = setInterval(window.fetchAndRenderReports, 6000);
+
+    } else {
+        injectStyle(`
+            body { background: #FFFBEA !important; min-height: 100vh; }
+            #app { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px !important; position: relative; z-index: 1; }
+            .login-card { width: 100%; max-width: 420px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+            .login-card a { color: #B58200; font-weight: 600; text-decoration: none; }
+            .login-card a:hover { text-decoration: underline; }
+        `);
+        app.innerHTML = `
+            <div class="login-card text-center">
+                <h3 class="mb-4 text-warning fw-bold">${hash === '#register' ? 'Daftar Akun' : 'Login Warga'}</h3>
+                <form id="loginForm">
+                    <input type="text" id="username" class="form-control mb-3" placeholder="Username" required>
+                    ${hash === '#register' ? '<input type="email" id="email" class="form-control mb-3" placeholder="Email" required>' : ''}
+                    <input type="password" id="password" class="form-control mb-3" placeholder="Password" required>
+                    <button type="submit" class="btn btn-warning w-100 fw-bold">${hash === '#register' ? 'Daftar' : 'Masuk'}</button>
+                </form>
+                <p class="mt-3 small">
+                    ${hash === '#register' ? 'Sudah punya akun? <a href="#login">Login</a>' : 'Belum punya akun? <a href="#register">Daftar</a>'}
+                </p>
+            </div>
+        `;
+        setupLoginForm();
+    }
 }

@@ -2,62 +2,58 @@ import { requestAPI } from "./api.js";
 
 export function setupLoginForm() {
     const form = document.getElementById("loginForm");
-
     if (!form) return;
 
     form.addEventListener("submit", async function (event) {
         event.preventDefault();
 
         try {
-            const username = document.getElementById("username").value;
+            const isRegisterPage = window.location.hash === "#register";
+            const username = document.getElementById("username").value.trim();
             const password = document.getElementById("password").value;
+            const email = document.getElementById("email")?.value.trim();
 
-            // Mengirim request ke backend Django
-            const response = await requestAPI(
-                "/api/token/",
-                "POST",
-                {
-                    username,
-                    password
+            if (isRegisterPage) {
+                const response = await requestAPI(
+                    "/api/register/",
+                    "POST",
+                    { username, email, password }
+                );
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    const firstError = Object.values(errorData).flat()[0];
+                    throw new Error(firstError || "Registrasi gagal. Coba username/email lain.");
                 }
+
+                alert("Registrasi berhasil! Silakan login.");
+                window.location.hash = "#login";
+                return;
+            }
+
+            // Memanggil path lengkap sesuai urls.py (api/token/)
+            const response = await requestAPI(
+                "/api/token/", 
+                "POST",
+                { username, password }
             );
 
-            console.log("STATUS:", response.status);
-
-            // Ambil teks mentah dulu untuk keperluan log kamu
-            const text = await response.text();
-            console.log("RESPONSE:", text);
-
-            // Validasi: Jika respons ternyata HTML (bukan JSON), kita tangkap sebelum di-parse
-            if (text.trim().startsWith("<!DOCTYPE")) {
-                throw new Error("Backend mengembalikan HTML, bukan JSON. Pastikan endpoint URL atau konfigurasi Accept Header di api.js sudah benar.");
+            // Cek jika response tidak sukses
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || "Login gagal, periksa username/password.");
             }
 
-            // Jika aman, baru lakukan parse JSON
-            const data = JSON.parse(text);
+            const data = await response.json();
+            localStorage.setItem("access_token", data.access);
+            localStorage.setItem("refresh_token", data.refresh);
 
-            if (response.ok) {
-                localStorage.setItem(
-                    "access_token",
-                    data.access
-                );
-
-                localStorage.setItem(
-                    "refresh_token",
-                    data.refresh
-                );
-
-                alert("Login berhasil!");
-                window.location.hash = "#dashboard";
-            } else {
-                // Menampilkan pesan error dari backend jika ada (misal: "No active account found")
-                const errorMsg = data.detail || "Login gagal!";
-                alert(errorMsg);
-            }
+            alert("Login berhasil!");
+            window.location.hash = "#dashboard";
 
         } catch (error) {
             console.error("Detail Error:", error);
-            alert("Terjadi error, cek Console.");
+            alert(error.message);
         }
     });
 }
