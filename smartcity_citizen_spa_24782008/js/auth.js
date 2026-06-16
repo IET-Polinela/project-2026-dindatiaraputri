@@ -1,4 +1,4 @@
-import { requestAPI } from "./api.js";
+import { requestAPI } from "./api.js?v=20260616-2";
 
 export function setupLoginForm() {
     const form = document.getElementById("loginForm");

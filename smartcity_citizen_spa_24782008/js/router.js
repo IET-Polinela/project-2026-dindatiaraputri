@@ -1,5 +1,5 @@
-import { setupLoginForm } from "./auth.js";
-import { requestAPI } from "./api.js";
+import { setupLoginForm } from "./auth.js?v=20260616-2";
+import { requestAPI } from "./api.js?v=20260616-2";
 
 /* =========================
    STYLE HELPERS (DIPERTAHANKAN)
