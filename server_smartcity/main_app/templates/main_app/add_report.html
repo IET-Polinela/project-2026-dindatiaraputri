@@ -4,7 +4,7 @@
     <title>Tambah Laporan</title>
     <style>
         body {
-            background-color: #fff0f5;
+            background-color: #f3e5f5; /* Background Ungu Muda */
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             flex-direction: column;
@@ -12,64 +12,48 @@
             padding-top: 30px;
         }
 
-        /* Style untuk Django Messages (Alert) */
-        .messages {
-            width: 350px;
-            list-style: none;
-            padding: 0;
-            margin-bottom: 15px;
-        }
-        .alert {
-            padding: 15px;
-            border-radius: 10px;
-            background-color: #fce4ec;
-            color: #d81b60;
-            border: 1px solid #f8bbd0;
-            text-align: center;
-            font-size: 14px;
+        .messages { width: 350px; list-style: none; padding: 0; margin-bottom: 15px; }
+        .alert { 
+            padding: 15px; border-radius: 10px; 
+            background-color: #e1bee7; color: #4a148c; 
+            border: 1px solid #ce93d8; text-align: center; font-size: 14px; 
         }
 
         form {
-            background-color: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 8px 20px rgba(255, 182, 193, 0.4);
-            width: 350px;
-            border: 2px solid #ffb6c1;
+            background-color: white; padding: 30px; border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(106, 27, 154, 0.2);
+            width: 350px; border: 2px solid #9c27b0;
         }
 
-        h2 { color: #ff69b4; text-align: center; }
+        h2 { color: #6a1b9a; text-align: center; }
 
         input, textarea {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            border: 2px solid #ffe4e1;
-            border-radius: 10px;
-            box-sizing: border-box;
+            width: 100%; padding: 10px; margin-top: 5px;
+            border: 2px solid #e1bee7; border-radius: 10px; box-sizing: border-box;
         }
 
-
-        /* Style Tombol & Loading */
         .button-row { display:flex; gap:10px; margin-top:15px }
-        .submit-btn { flex:1; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; display:flex; justify-content:center; align-items:center }
-        #btn-submit { background-color: #ffb6c1; color: white; border: none; }
-        #btn-draft { background-color: white; color: #ff69b4; border: 2px solid #ffb6c1 }
+        .submit-btn { 
+            flex:1; padding: 12px; border-radius: 10px; font-weight: bold; 
+            cursor: pointer; display:flex; justify-content:center; align-items:center 
+        }
+        
+        /* Tombol Ungu Utama */
+        #btn-submit { background-color: #6a1b9a; color: white; border: none; }
+        /* Tombol Draft */
+        #btn-draft { background-color: white; color: #6a1b9a; border: 2px solid #6a1b9a }
 
-        .submit-btn:disabled { opacity: 0.7; cursor: not-allowed }
+        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed }
 
         .loader {
             border: 3px solid #f3f3f3;
-            border-top: 3px solid #ff69b4;
+            border-top: 3px solid #6a1b9a;
             border-radius: 50%;
-            width: 15px;
-            height: 15px;
+            width: 15px; height: 15px;
             animation: spin 1s linear infinite;
-            margin-right: 10px;
-            display: none; /* Sembunyi secara default */
+            margin-right: 8px;
+            display: none;
         }
-
-        .loader.small { width:12px; height:12px; border-width:2px }
 
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -91,34 +75,31 @@
         
         <div class="button-row">
             <button type="submit" name="action" value="draft" class="submit-btn" id="btn-draft">
-                <span class="loader small" id="loader-draft"></span>
-                <span>Simpan sebagai Draft</span>
+                <span class="loader" id="loader-draft"></span>
+                <span>Simpan Draft</span>
             </button>
             <button type="submit" name="action" value="submit" class="submit-btn" id="btn-submit">
-                <span class="loader" id="loader"></span>
-                <span id="btn-text">Simpan</span>
+                <span class="loader" id="loader-submit"></span>
+                <span id="btn-text">Kirim</span>
             </button>
         </div>
     </form>
 
-    <a href="{% url 'report_list' %}" style="margin-top: 20px; color: #db7093; text-decoration: none;">Kembali</a>
+    <a href="{% url 'report_list' %}" style="margin-top: 20px; color: #4a148c; text-decoration: none;">Kembali</a>
 
     <script>
-        // Script untuk Loading Feedback per tombol (Draft / Submit)
-        const submitButtons = document.querySelectorAll('.submit-btn');
-        submitButtons.forEach(btn => {
-            btn.addEventListener('click', function() {
-                // Nonaktifkan semua tombol setelah klik
-                submitButtons.forEach(b => b.disabled = true);
-                // Tampilkan loader hanya di tombol yang diklik
-                const loader = btn.querySelector('.loader');
-                const textEl = btn.querySelector('span:last-child');
-                if (loader) loader.style.display = 'block';
-                if (textEl) {
-                    if (btn.value === 'draft') textEl.innerText = 'Menyimpan...';
-                    else textEl.innerText = 'Mengirim...';
-                }
-            });
+        const form = document.getElementById('reportForm');
+        form.addEventListener('submit', function(e) {
+            // Nonaktifkan tombol saat diklik
+            const buttons = document.querySelectorAll('.submit-btn');
+            buttons.forEach(b => b.disabled = true);
+            
+            // Tampilkan loader pada tombol yang aktif (submitter)
+            const submitter = e.submitter;
+            const loader = submitter.querySelector('.loader');
+            if (loader) loader.style.display = 'block';
+            
+            submitter.querySelector('span:last-child').innerText = 'Memproses...';
         });
     </script>
 </body>

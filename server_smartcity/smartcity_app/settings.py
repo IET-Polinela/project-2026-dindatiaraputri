@@ -9,28 +9,26 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
-    # 1. Aplikasi Kustom
     'usermanagement_24782008',
     'main_app',
-    'dashboard_24782008',  # ✅ TAMBAHKAN INI
+    'dashboard_24782008',
     'about',
     'contacts',
+    
     'rest_framework',
     'corsheaders',
-
-    # 2. Aplikasi Bawaan Django
+    'drf_spectacular',
+    'drf_spectacular_sidecar',  # Wajib ada agar template scalar.html terbaca
+    
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    # ... app bawaan django dan rest_framework lainnya ...
-    'rest_framework_simplejwt',  # <--- Tambahkan baris ini
-    # ... app buatanmu (misal: laporan, dll) ...
+    
+    'rest_framework_simplejwt',
 ]
-
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware', # WAJIB DI PALING ATAS
@@ -46,14 +44,19 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'smartcity_app.urls'
 
+import os
 # --- TEMPLATES ---
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'], 
+        # Kita tambahkan folder template aplikasi dan folder global
+        'DIRS': [
+            os.path.join(BASE_DIR, 'templates'),
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -105,17 +108,18 @@ LOGOUT_REDIRECT_URL = 'login'
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
-        # 1. Taruh BrowsableAPIRenderer di paling atas agar tombolnya muncul kembali
         'rest_framework.renderers.BrowsableAPIRenderer',
         'rest_framework.renderers.JSONRenderer',
     ],
-    'DEFAULT_AUTHENTICATION_CLASSES': (
+    'DEFAULT_AUTHENTICATION_CLASSES': [ # Ubah ke list []
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'rest_framework.authentication.SessionAuthentication'
-    )
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 CORS_ALLOW_ALL_ORIGINS = True
+CSRF_TRUSTED_ORIGINS = ['http://103.151.63.71:8011']
 
 from datetime import timedelta
 
@@ -127,3 +131,26 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',), # Format di header: Bearer <token>
 }
 
+
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Smart City Portal API',
+    'DESCRIPTION': 'Dokumentasi REST API resmi',
+    'VERSION': '1.0.0',
+    # Mengarahkan agar UI menggunakan file dari drf-spectacular-sidecar
+    'SWAGGER_UI_DIST': 'SIDECAR',
+    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
+    'REDOC_DIST': 'SIDECAR',
+    'SCALAR_DIST': 'SIDECAR',  # Ini kunci agar scalar.html ditemukan
+    
+    'COMPONENT_SPLIT_REQUEST': True,
+    'SECURITY': [{'BearerToken': []}],
+    'SECURITY_DEFINITIONS': {
+        'BearerToken': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+            'description': 'Format: Bearer <token>',
+        },
+    },
+}

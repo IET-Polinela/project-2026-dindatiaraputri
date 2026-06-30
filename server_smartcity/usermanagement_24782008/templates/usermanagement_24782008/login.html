@@ -6,94 +6,85 @@
     <title>Login - Smart City</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        /* Tema Ungu Pastel */
         body { 
-            background: linear-gradient(135deg, #ffafbd 0%, #ffc3a0 100%); 
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); 
             min-height: 100vh; 
             display: flex; 
             align-items: center; 
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Segoe UI', sans-serif; 
         }
         .login-card { 
-            background: rgba(255, 255, 255, 0.95); 
-            border-radius: 20px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
-            border: none; 
+            background: rgba(255, 255, 255, 0.9); 
+            border-radius: 25px; 
+            box-shadow: 0 15px 35px rgba(107, 70, 193, 0.2); 
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
-        .btn-pink { 
-            background-color: #ff69b4; 
+        .btn-purple { 
+            background-color: #9b5de5; 
             color: white; 
             border-radius: 12px; 
-            font-weight: 600;
-            padding: 10px;
-            border: none;
+            font-weight: 600; 
+            padding: 12px; 
+            border: none; 
+            transition: 0.3s;
         }
-        .btn-pink:hover { 
-            background-color: #e91e63; 
+        .btn-purple:hover { 
+            background-color: #7641c2; 
             color: white; 
-            box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
         }
-        /* Styling untuk input agar senada */
-        input {
-            border-radius: 10px !important;
-            border: 1px solid #ffafbd !important;
-            padding: 10px !important;
+        input { 
+            border-radius: 12px !important; 
+            border: 2px solid #d1b3ff !important; 
+            padding: 12px !important; 
+            background-color: #f8f5ff !important;
         }
-        input:focus {
-            box-shadow: 0 0 0 0.25 margin-left rgba(255, 105, 180, 0.25) !important;
-            border-color: #ff69b4 !important;
+        input:focus { 
+            border-color: #9b5de5 !important; 
+            box-shadow: 0 0 8px rgba(155, 93, 229, 0.3) !important;
         }
-        label {
-            color: #6d594f;
-            font-weight: 500;
-            margin-bottom: 5px;
-        }
+        label { color: #5a3e8c; font-weight: 600; margin-bottom: 8px; }
+        h3 { color: #4a2c7a; font-weight: 700; }
+        .text-muted { color: #8e7dbd !important; }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="row align-items-center" style="min-height:70vh">
-        <!-- Static/Left column -->
-        <div class="col-md-4 d-none d-md-flex flex-column justify-content-center align-items-start">
-            <h2 style="color:#6b21a8; font-weight:700;">Selamat Datang</h2>
-            <p class="text-muted">Masuk untuk mengelola laporan dan profil Anda di BANDAR LAMPUNG City.</p>
+        <div class="col-md-4 d-none d-md-flex flex-column align-items-start">
+            <h2 style="color:#4a2c7a; font-weight:800;">Smart City</h2>
+            <p style="color:#6a4c93;">Kelola laporan kota Anda dengan akses yang aman dan elegan.</p>
         </div>
 
-        <!-- Login center column -->
         <div class="col-12 col-md-7">
             <div class="d-flex justify-content-center">
-                <div class="card login-card p-4" style="max-width:420px; width:100%;">
+                <div class="card login-card p-5" style="max-width:420px; width:100%;">
                     <div class="text-center mb-4">
-                        <h3 style="color: #d81b60; font-weight: 600;">Login ✨</h3>
-                        <p class="text-muted small">Selamat datang kembali di Raccoon City</p>
+                        <h3>Login ✨</h3>
+                        <p class="text-muted small">Selamat datang kembali, Warga!</p>
                     </div>
 
                     <form method="post">
                         {% csrf_token %}
-                        
-                        {# Looping form secara manual agar lebih cantik daripada .as_p #}
                         {% for field in form %}
                             <div class="mb-3">
                                 <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                                {# Tambahkan class form-control secara manual #}
-                                <div class="input-group">
-                                    <input type="{{ field.field.widget.input_type }}" 
-                                           name="{{ field.name }}" 
-                                           id="{{ field.id_for_label }}" 
-                                           class="form-control" 
-                                           required>
-                                </div>
+                                <input type="{{ field.field.widget.input_type }}" 
+                                       name="{{ field.name }}" 
+                                       id="{{ field.id_for_label }}" 
+                                       class="form-control" 
+                                       required>
                                 {% if field.errors %}
                                     <small class="text-danger">{{ field.errors|striptags }}</small>
                                 {% endif %}
                             </div>
                         {% endfor %}
-
-                        <button type="submit" class="btn btn-pink w-100 mt-2">Masuk Sekarang</button>
+                        <button type="submit" class="btn btn-purple w-100 mt-3">Masuk Sekarang</button>
                     </form>
                     
                     <div class="text-center mt-4">
-                        <a href="{% url 'report_list' %}" class="text-decoration-none small" style="color: #a98467;">
-                            <i class="bi bi-arrow-left"></i> Kembali ke Beranda
+                        <a href="{% url 'home' %}" class="text-decoration-none small" style="color: #8e7dbd;">
+                            &larr; Kembali ke Beranda
                         </a>
                     </div>
                 </div>

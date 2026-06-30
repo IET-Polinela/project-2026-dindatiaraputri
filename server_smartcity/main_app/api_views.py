@@ -2,6 +2,7 @@ from django.db.models import Q
 from rest_framework import viewsets, status, permissions, generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from drf_spectacular.utils import extend_schema
 
 from .models import Report
 from .serializers import ReportSerializer, RegisterSerializer
@@ -165,6 +166,7 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
 
 
+@extend_schema(exclude=True)
 class WhoAmI(APIView):
     """Sederhana API untuk mengembalikan informasi user saat ini (dipakai frontend)."""
     permission_classes = [permissions.IsAuthenticated]
