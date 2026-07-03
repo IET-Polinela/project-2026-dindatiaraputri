@@ -8,8 +8,8 @@ export function setupLoginForm() {
         event.preventDefault();
 
         const isRegisterPage = window.location.hash === "#register";
-        const username = document.getElementById("username")?.value?.trim();
-        const password = document.getElementById("password")?.value;
+        const username = document.getElementById("loginUsername")?.value?.trim();
+        const password = document.getElementById("loginPassword")?.value;
         const email = document.getElementById("email")?.value?.trim();
 
         try {
@@ -54,6 +54,7 @@ export function setupLoginForm() {
 
             localStorage.setItem("access_token", res.data.access);
             localStorage.setItem("refresh_token", res.data.refresh);
+            localStorage.setItem("username", username);
 
             alert("Login berhasil!");
             window.location.hash = "#dashboard";

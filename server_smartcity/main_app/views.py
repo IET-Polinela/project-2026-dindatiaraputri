@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
 from django.db.models import Count, Q
 from django.http import JsonResponse
@@ -19,9 +20,10 @@ from django.views.generic import (
 )
 
 # === REST FRAMEWORK EXTENSIONS ===
-from rest_framework import generics, viewsets
+from rest_framework import generics, viewsets, status as drf_status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
 from .forms import ReportForm
 from .models import Report
 from .serializers import RegisterSerializer, ReportSerializer
@@ -86,6 +88,64 @@ class ReportViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(reporter=self.request.user)
 
+    # ==========================================
+    # CREATE: Admin tidak boleh membuat laporan
+    # ==========================================
+    def create(self, request, *args, **kwargs):
+        if request.user.is_staff:
+            return Response(
+                {'message': 'Admin tidak boleh membuat laporan! ❌'},
+                status=drf_status.HTTP_403_FORBIDDEN
+            )
+        return super().create(request, *args, **kwargs)
+
+    # ==========================================
+    # UPDATE: Aturan bisnis kepemilikan & status
+    #   - Admin: hanya boleh ubah field 'status'
+    #   - Citizen: hanya boleh edit milik sendiri & status masih DRAFT
+    # ==========================================
+    def update(self, request, *args, **kwargs):
+        report = self.get_object()
+
+        if request.user.is_staff:
+            status_value = request.data.get('status')
+            if not status_value or len(request.data.keys()) > 1:
+                return Response(
+                    {'message': 'Admin hanya boleh mengubah status laporan saja! ❌'},
+                    status=drf_status.HTTP_403_FORBIDDEN
+                )
+            report.status = status_value
+            report.save()
+            serializer = self.get_serializer(report)
+            return Response(serializer.data, status=drf_status.HTTP_200_OK)
+
+        # Citizen: hanya boleh edit laporan miliknya sendiri, dan hanya jika DRAFT
+        if report.reporter != request.user or report.status != 'DRAFT':
+            return Response(
+                {'message': 'Laporan tidak bisa diubah! Bukan milik Anda atau sudah diproses. 🔒'},
+                status=drf_status.HTTP_403_FORBIDDEN
+            )
+        return super().update(request, *args, **kwargs)
+
+    # ==========================================
+    # DELETE: Hanya owner boleh hapus, dan hanya jika DRAFT
+    # ==========================================
+    def destroy(self, request, *args, **kwargs):
+        report = self.get_object()
+
+        if request.user.is_staff:
+            return Response(
+                {'message': 'Admin tidak boleh menghapus laporan masyarakat! ❌'},
+                status=drf_status.HTTP_403_FORBIDDEN
+            )
+
+        if report.reporter != request.user or report.status != 'DRAFT':
+            return Response(
+                {'message': 'Laporan tidak bisa dihapus! Bukan milik Anda atau sudah diproses. 🔒'},
+                status=drf_status.HTTP_403_FORBIDDEN
+            )
+        return super().destroy(request, *args, **kwargs)
+
 
 # ==========================================
 # 🔐 AUTH & TEMPLATE VIEWS (BAWAAN SEBELUMNYA)
@@ -101,6 +161,23 @@ class AdminOnlyMixin:
             return redirect('login')
         if not getattr(request.user, 'is_admin', False) and not request.user.is_staff:
             messages.error(request, "Akses ditolak! Hanya admin.")
+            return redirect('report_list')
+        return super().dispatch(request, *args, **kwargs)
+
+
+class NoAdminEditMixin(AdminOnlyMixin):
+    """
+    Dipakai untuk view Edit & Hapus laporan (konten).
+    Admin TIDAK diizinkan mengubah konten atau menghapus laporan warga.
+    Admin hanya boleh mengubah STATUS laporan melalui ReportUpdateStatusView.
+    """
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and request.user.is_staff:
+            messages.error(
+                request,
+                "Admin tidak dapat mengedit/menghapus laporan. "
+                "Admin hanya dapat mengubah status laporan. ❌"
+            )
             return redirect('report_list')
         return super().dispatch(request, *args, **kwargs)
 
@@ -139,7 +216,7 @@ class ReportCreateView(AdminOnlyMixin, CreateView):
             messages.success(self.request, "Laporan berhasil dibuat ✅")
         return super().form_valid(form)
 
-class ReportUpdateView(AdminOnlyMixin, UpdateView):
+class ReportUpdateView(NoAdminEditMixin, UpdateView):
     model = Report
     form_class = ReportForm
     template_name = 'main_app/add_report.html'
@@ -156,7 +233,7 @@ class ReportUpdateView(AdminOnlyMixin, UpdateView):
             messages.info(self.request, "Laporan berhasil diperbarui ✏️")
         return super().form_valid(form)
 
-class ReportDeleteView(AdminOnlyMixin, DeleteView):
+class ReportDeleteView(NoAdminEditMixin, DeleteView):
     model = Report
     template_name = 'main_app/confirm_delete.html'
     success_url = reverse_lazy('report_list')
@@ -168,7 +245,11 @@ class ReportUpdateStatusView(AdminOnlyMixin, View):
     def post(self, request, pk):
         report = get_object_or_404(Report, pk=pk)
         new_status = request.POST.get('status')
-        valid_transitions = {'DRAFT': 'VERIFIED', 'VERIFIED': 'RESOLVED'}
+        valid_transitions = {
+            'REPORTED': 'VERIFIED',
+            'VERIFIED': 'IN_PROGRESS',
+            'IN_PROGRESS': 'RESOLVED',
+        }
         if report.status in valid_transitions and new_status == valid_transitions[report.status]:
             report.status = new_status
             report.save()
@@ -177,6 +258,7 @@ class ReportUpdateStatusView(AdminOnlyMixin, View):
             messages.warning(request, "Perubahan status tidak valid! ❌")
         return redirect('report_list')
 
+@staff_member_required
 def dashboard_page(request):
     return render(request, 'dashboard_24782008/dashboard.html')
 
@@ -214,3 +296,4 @@ def report_detail_api(request, pk):
 
 def home_page(request):
     return render(request, 'main_app/home.html', {'reports': visible_reports_for(request.user).order_by('-id')})
+

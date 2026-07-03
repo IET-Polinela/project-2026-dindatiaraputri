@@ -260,6 +260,16 @@ fetch('/api/dashboard/')
 
     // Fungsi Render Tabel dengan Tombol Detail
     const renderTable = (tbody, list) => {
+        if (!list || list.length === 0) {
+            // Placeholder agar tbody tetap punya tinggi (tidak "hidden")
+            // walaupun belum ada data untuk kategori ini.
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="4" style="text-align:center; color:#999;">Belum ada laporan</td>
+                </tr>
+            `;
+            return;
+        }
         list.forEach(item => {
             tbody.innerHTML += `
                 <tr>

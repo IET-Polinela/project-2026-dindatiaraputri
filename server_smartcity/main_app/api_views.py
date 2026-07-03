@@ -2,10 +2,18 @@ from django.db.models import Q
 from rest_framework import viewsets, status, permissions, generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.pagination import PageNumberPagination
 from drf_spectacular.utils import extend_schema
 
 from .models import Report
 from .serializers import ReportSerializer, RegisterSerializer
+
+
+# 🌟 INSTRUKSI LAB: Paginasi dengan ukuran page_size = 10
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
 
 
 # =====================================================================
@@ -14,6 +22,7 @@ from .serializers import ReportSerializer, RegisterSerializer
 class ReportViewSet(viewsets.ModelViewSet):
     serializer_class = ReportSerializer
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = StandardResultsSetPagination
 
     # ==========================================
     # LIST & DETAIL
@@ -32,11 +41,10 @@ class ReportViewSet(viewsets.ModelViewSet):
             return queryset.exclude(status='DRAFT')
 
         # ----------------- CITIZEN -----------------
-        # Tab utama: draft milik sendiri + semua laporan yang sudah bukan draft
+        # Tab utama: HANYA laporan milik user sendiri (semua status,
+        # termasuk DRAFT miliknya)
         if tab == 'my_reports':
-            return queryset.filter(
-                Q(reporter=user) | ~Q(status='DRAFT')
-            ).distinct()
+            return queryset.filter(reporter=user)
 
         # Tab feed kota: citizen melihat semua laporan yang sudah bukan draft
         if tab == 'feed':

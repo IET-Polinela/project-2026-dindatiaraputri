@@ -182,14 +182,34 @@ h1, h2 {
                         </td>
 
                         {% if user.is_authenticated and user.is_admin %}
-                        <td class="text-center">
-                            <a href="{% url 'report_edit' laporan.id %}" 
-                               onclick="event.stopPropagation()" 
-                               class="btn btn-sm btn-primary">Edit</a>
-
-                            <a href="{% url 'report_delete' laporan.id %}" 
-                               onclick="event.stopPropagation()" 
-                               class="btn btn-sm btn-danger">Hapus</a>
+                        <td class="text-center" onclick="event.stopPropagation()">
+                            {% if laporan.status == 'REPORTED' %}
+                                <form method="post" action="{% url 'update_status' laporan.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="status" value="VERIFIED">
+                                    <button type="submit" class="btn btn-sm btn-info text-white">
+                                        Verifikasi ➜ VERIFIED
+                                    </button>
+                                </form>
+                            {% elif laporan.status == 'VERIFIED' %}
+                                <form method="post" action="{% url 'update_status' laporan.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="status" value="IN_PROGRESS">
+                                    <button type="submit" class="btn btn-sm btn-warning">
+                                        Proses ➜ IN PROGRESS
+                                    </button>
+                                </form>
+                            {% elif laporan.status == 'IN_PROGRESS' %}
+                                <form method="post" action="{% url 'update_status' laporan.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="status" value="RESOLVED">
+                                    <button type="submit" class="btn btn-sm btn-success">
+                                        Selesaikan ➜ RESOLVED
+                                    </button>
+                                </form>
+                            {% else %}
+                                <span class="text-muted small">Laporan selesai (read-only)</span>
+                            {% endif %}
                         </td>
                         {% endif %}
                     </tr>

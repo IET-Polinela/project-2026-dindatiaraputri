@@ -1,4 +1,4 @@
-const DEFAULT_HOST = "103.151.63.71:8011";
+const DEFAULT_HOST = "localhost:8000";
 
 const DEFAULT_PROTOCOL = (typeof window !== 'undefined' && window.location && window.location.protocol)
     ? window.location.protocol.replace(':', '')
@@ -44,17 +44,24 @@ export async function requestAPI(endpoint, method = "GET", bodyData = null) {
         };
     }
 
-    // 🔥 AMBIL JSON DI SINI SEKALIAN (BIAR AMAN)
-    let data = null;
-
-    // Debug: log objek response untuk deteksi masalah seperti `response.json is not a function`
-    try {
-        console.debug("[requestAPI] fetch response:", response);
-        console.debug("[requestAPI] response instanceof Response:", (typeof Response !== 'undefined') ? (response instanceof Response) : 'Response not available');
-    } catch (dbgErr) {
-        console.debug('[requestAPI] debug err', dbgErr);
+    // ======================================================
+    // INTERCEPTOR 401 (AUTH-05 & AUTH-06)
+    // ======================================================
+    // Jika token invalid/kadaluarsa, server mengembalikan 401.
+    // SPA ini TIDAK memiliki mekanisme auto-refresh token, jadi
+    // begitu 401 diterima, sesi langsung dianggap berakhir:
+    //   - localStorage dibersihkan total
+    //   - user diberi tahu via alert
+    //   - user diarahkan kembali ke halaman login
+    // ======================================================
+    if (response.status === 401) {
+        alert('Sesi Anda telah habis atau Anda belum login.');
+        localStorage.clear();
+        window.location.hash = '#login';
+        return null;
     }
 
+    let data = null;
     try {
         data = await response.json();
     } catch (e) {

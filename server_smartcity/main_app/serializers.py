@@ -33,9 +33,15 @@ class RegisterSerializer(serializers.ModelSerializer):
 # 2. REPORT SERIALIZER
 # ==========================================
 class ReportSerializer(serializers.ModelSerializer):
-    # Menggunakan SerializerMethodField untuk menyamarkan nama asli warga menjadi anonim
+    # Field 'reporter' SELALU disamarkan menjadi "Warga Anonim" (hardcoded),
+    # dipakai untuk tampilan publik/feed kota.
     reporter = serializers.SerializerMethodField()
-    
+
+    # Field 'reporter_name' menampilkan username ASLI, tapi HANYA jika
+    # request.user adalah pemilik laporan tersebut. Dipakai untuk tab
+    # "my_reports" (laporan milik sendiri).
+    reporter_name = serializers.SerializerMethodField()
+
     # 🌟 FIELD UNTUK FIGURE 2: Menentukan hak kepemilikan draf
     is_owner = serializers.SerializerMethodField()
 
@@ -49,24 +55,29 @@ class ReportSerializer(serializers.ModelSerializer):
             'location',
             'status',
             'reporter',
+            'reporter_name',
             'created_at',
             'updated_at',
             'is_owner'  # Pendaftaran field di JSON output
         ]
         # Memastikan field berikut tidak perlu diisi manual via JSON input saat POST/PUT
-        read_only_fields = ['reporter', 'created_at', 'updated_at', 'is_owner']
+        read_only_fields = ['reporter', 'reporter_name', 'created_at', 'updated_at', 'is_owner']
 
     def get_reporter(self, obj):
-        # 🌟 LOGIKA UNTUK SCREENSHOT 3 (FEED KOTA): 
-        # Jika user sedang melihat laporannya sendiri, tampilkan username aslinya.
+        # Field ini SELALU anonim, tanpa pengecualian — dipakai di Feed Kota
+        # agar identitas pelapor tidak pernah bocor ke warga lain.
+        return "Warga Anonim"
+
+    def get_reporter_name(self, obj):
+        # Field ini menampilkan nama asli HANYA untuk pemilik laporan.
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             if hasattr(obj, 'author') and obj.author == request.user:
                 return request.user.username
             elif hasattr(obj, 'reporter') and obj.reporter == request.user:
                 return request.user.username
-                
-        # Jika diakses oleh warga lain (di Feed Kota), identitas langsung disensor penuh!
+
+        # Untuk warga lain, tetap disamarkan
         return "Warga Anonim"
 
     # 🌟 FIX LOGIKA INTERAKSI & TOMBOL EDIT (SCREENSHOT 2 & 5)
