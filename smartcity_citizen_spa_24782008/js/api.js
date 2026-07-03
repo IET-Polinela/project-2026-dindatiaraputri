@@ -1,8 +1,9 @@
-const DEFAULT_HOST = "localhost:8000";
+const DEFAULT_HOST = "103.151.63.71:8011";
 
-const DEFAULT_PROTOCOL = (typeof window !== 'undefined' && window.location && window.location.protocol)
-    ? window.location.protocol.replace(':', '')
-    : 'http';
+// Backend di VPS kampus berjalan di HTTP biasa (belum ada SSL/HTTPS).
+// Kita paksa 'http' di sini, TIDAK ikut protokol halaman (yang https di GitHub Pages),
+// supaya request tidak salah alamat. Lihat catatan mixed-content di bawah.
+const DEFAULT_PROTOCOL = 'http';
 
 if (typeof window !== 'undefined' && typeof window.DEFAULT_PROTOCOL === 'undefined') {
     window.DEFAULT_PROTOCOL = DEFAULT_PROTOCOL;
